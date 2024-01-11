@@ -8,6 +8,12 @@ export class Blockchaincom implements Provider {
     getBlocks(): Promise<Array<BlockResult>> {
         return request<Array<BlockResult>>('https://blockchain.info/blocks?format=json')
     }
+
+    getBlockNumber(): Promise<number> {
+        return fetch('https://blockchain.info/latestblock')
+        .then(response => response.json())
+        .then(data => data.height);
+    }
 }
 // https://www.newline.co/@bespoyasov/how-to-use-fetch-with-typescript--a81ac257
 // Make the `request` function generic

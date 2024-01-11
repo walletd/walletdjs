@@ -8,7 +8,7 @@ export class Blockstream implements Provider{
         .then(data => data.hash );
     }
 
-    getTipHeight(): Promise<number> {
+    getBlockNumber(): Promise<number> {
         return fetch('https://blockstream.info/api/blocks/tip/height')
         .then(response => response.json())
         .then(data => data.height);

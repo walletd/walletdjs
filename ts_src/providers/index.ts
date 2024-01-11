@@ -9,6 +9,7 @@ export enum Providers {
 }
 export interface Provider {
     getBlockByHash: (hash: string) => Promise<BlockResult>;
+    getBlockNumber: () => Promise<number>;
 }
 
 export type BlockResult = {
