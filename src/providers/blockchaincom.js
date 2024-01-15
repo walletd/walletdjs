@@ -8,6 +8,11 @@ class Blockchaincom {
   getBlocks() {
     return request("https://blockchain.info/blocks?format=json");
   }
+  getBlockNumber() {
+    return fetch("https://blockchain.info/latestblock")
+      .then((response) => response.json())
+      .then((data) => data.height);
+  }
 }
 exports.Blockchaincom = Blockchaincom;
 // https://www.newline.co/@bespoyasov/how-to-use-fetch-with-typescript--a81ac257

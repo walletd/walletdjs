@@ -2,24 +2,74 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Blockstream = void 0;
 class Blockstream {
-  getTipHash() {
-    return fetch("https://blockstream.info/api/blocks/tip/hash")
-      .then((response) => response.json())
-      .then((data) => data.hash);
+  constructor(url) {
+    this.url = "https://blockstream.info/api";
+    if (url !== undefined) {
+      this.url = url;
+    }
   }
-  getTipHeight() {
-    return fetch("https://blockstream.info/api/blocks/tip/height")
-      .then((response) => response.json())
-      .then((data) => data.height);
+  getTipHash() {
+    return fetch(this.url + "/blocks/tip/hash")
+      .then((response) => response.text())
+      .then((data) => data);
+  }
+  getBlockNumber() {
+    return fetch(this.url + "/blocks/tip/height")
+      .then((response) => response.text())
+      .then((data) => Number(data));
   }
   getBlocks(height) {
-    return request("https://blockstream.info/api/blocks/" + height);
+    return request(this.url + "/blocks/" + height).then((data) => {
+      return data.map((block) => {
+        return {
+          hash: block.id,
+          ver: block.version,
+          prev_block: block.previousblockhash,
+          mrkl_root: block.merkle_root,
+          time: block.timestamp,
+          bits: block.bits,
+          nonce: block.nonce,
+          n_tx: block.tx_count,
+          size: block.size,
+          block_index: block.height,
+          main_chain: true,
+          height: block.height,
+          recieved_time: block.timestamp,
+          relayed_by: "blockstream.info",
+        };
+      });
+    });
   }
   getBlockByHeight(height) {
-    return request("https://blockstream.info/api/block-height/" + height);
+    return fetch(this.url + "/block-height/" + height)
+      .then((response) => response.text())
+      .then((data) => data);
   }
   getBlockByHash(hash) {
-    return request("https://blockstream.info/api/block/" + hash);
+    return request(this.url + "/block/" + hash).then((data) => {
+      return {
+        hash: data.id,
+        ver: data.version,
+        prev_block: data.previousblockhash,
+        mrkl_root: data.merkle_root,
+        time: data.timestamp,
+        bits: data.bits,
+        nonce: data.nonce,
+        n_tx: data.tx_count,
+        size: data.size,
+        block_index: data.height,
+        main_chain: true,
+        height: data.height,
+        recieved_time: data.timestamp,
+        relayed_by: "blockstream.info",
+      };
+    });
+  }
+  getAddress(address) {
+    return request(this.url + "/address/" + address);
+  }
+  getTransaction(txid) {
+    return request(this.url + "/tx/" + txid);
   }
 }
 exports.Blockstream = Blockstream;

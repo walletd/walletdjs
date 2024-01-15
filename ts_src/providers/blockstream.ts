@@ -1,29 +1,152 @@
 import { BlockResult, Provider } from ".";
 
-export class Blockstream implements Provider{
+type BlockstreamBlockResult = {
+  id: String,
+  height: number,
+  version: number,
+  timestamp: number,
+  tx_count: number,
+  size: number,
+  weight: number,
+  merkle_root: String,
+  previousblockhash: String,
+  mediantime: number,
+  nonce: number,
+  bits: number,
+  difficulty: number
+}
 
+type AddressResult = {
+    address: string,
+    chain_stats: StatsResult,
+    mempool_stats: StatsResult
+}
+
+type StatsResult = {
+    funded_txo_count: number,
+    funded_txo_sum: number,
+    spent_txo_count: number,
+    spent_txo_sum: number,
+    tx_count: number,
+}
+
+type TransactionResult = {
+    txid: string,
+    version: number,
+    locktime: number,
+    vin: Array<VinResult>,
+    vout: Array<VoutResult>,
+    size: number,
+    weight: number,
+    fee: number,
+    status: StatusResult,
+}
+
+type StatusResult = {
+    confirmed: boolean,
+    block_height: number,
+    block_hash: string,
+    block_time: number
+}
+
+type VinResult = {
+    txid: string,
+    vout: number,
+    prevout: VoutResult,
+    scriptsig: string,
+    scriptsig_asm: string,
+    witness: Array<string>,
+    is_coinbase: boolean,
+    sequence: number
+}
+
+type VoutResult = {
+    scriptpubkey: string,
+    scriptpubkey_asm: string,
+    scriptpubkey_type: string,
+    scriptpubkey_address: string,
+    value: number,
+}
+
+export class Blockstream implements Provider{
+    url: string = 'https://blockstream.info/api';
+
+    constructor(url?: string) {
+        if (url !== undefined) {
+            this.url = url;
+        }
+    }
+    
     getTipHash(): Promise<string> {
-        return fetch('https://blockstream.info/api/blocks/tip/hash')
-        .then(response => response.json())
-        .then(data => data.hash );
+        return fetch(this.url + '/blocks/tip/hash')
+        .then(response => response.text())
+        .then(data => data );
     }
 
     getBlockNumber(): Promise<number> {
-        return fetch('https://blockstream.info/api/blocks/tip/height')
-        .then(response => response.json())
-        .then(data => data.height);
+        return fetch(this.url + '/blocks/tip/height')
+        .then(response => response.text())
+        .then(data => Number(data));
     }
 
     getBlocks(height: number): Promise<Array<BlockResult>> {
-        return request<Array<BlockResult>>('https://blockstream.info/api/blocks/' + height)
+        return request<Array<BlockstreamBlockResult>>(this.url + '/blocks/' + height)
+        .then(data => {
+            return data.map((block) => {
+                return {
+                    hash: block.id,
+                    ver: block.version,
+                    prev_block: block.previousblockhash,
+                    mrkl_root: block.merkle_root,
+                    time: block.timestamp,
+                    bits: block.bits,
+                    nonce: block.nonce,
+                    n_tx: block.tx_count,
+                    size: block.size,
+                    block_index: block.height,
+                    main_chain: true,
+                    height: block.height,
+                    recieved_time: block.timestamp,
+                    relayed_by: 'blockstream.info'
+                } as BlockResult;
+            })
+        })
     }
 
-    getBlockByHeight(height: number): Promise<BlockResult> {
-        return request<BlockResult>('https://blockstream.info/api/block-height/' + height)
+    getBlockByHeight(height: number): Promise<string> {
+        return fetch(this.url + '/block-height/' + height)
+        .then(response => response.text())
+        .then(data => data);
     }
 
     getBlockByHash(hash: string): Promise<BlockResult> {
-        return request<BlockResult>('https://blockstream.info/api/block/' + hash)
+        return request<BlockstreamBlockResult>(this.url + '/block/' + hash)
+        .then((data) => {
+            return {
+                hash: data.id,
+                ver: data.version,
+                prev_block: data.previousblockhash,
+                mrkl_root: data.merkle_root,
+                time: data.timestamp,
+                bits: data.bits,
+                nonce: data.nonce,
+                n_tx: data.tx_count,
+                size: data.size,
+                block_index: data.height,
+                main_chain: true,
+                height: data.height,
+                recieved_time: data.timestamp,
+                relayed_by: 'blockstream.info'
+            } as BlockResult;
+        });
+    }
+
+    getAddress(address: string): Promise<AddressResult> {
+        return request<AddressResult>(this.url + '/address/' + address)
+    }
+
+    getTransaction(txid: string): Promise<TransactionResult> {
+        return request<TransactionResult>(this.url + '/tx/' + txid)
     }
 }
 // https://www.newline.co/@bespoyasov/how-to-use-fetch-with-typescript--a81ac257
