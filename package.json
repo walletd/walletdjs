@@ -33,6 +33,12 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "rimraf": "^5.0.5"
+    "@types/sjcl": "^1.0.34",
+    "bip32": "^4.0.0",
+    "bip39": "^3.1.0",
+    "bitcoinjs-lib": "^6.1.5",
+    "rimraf": "^5.0.5",
+    "sjcl": "^1.0.8",
+    "tiny-secp256k1": "^2.2.3"
   }
 }
