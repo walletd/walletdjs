@@ -68,6 +68,9 @@ class Blockstream {
   getAddress(address) {
     return request(this.url + "/address/" + address);
   }
+  getAddressTransactions(address) {
+    return request(this.url + "/address/" + address + "/txs");
+  }
   getTransaction(txid) {
     return request(this.url + "/tx/" + txid);
   }

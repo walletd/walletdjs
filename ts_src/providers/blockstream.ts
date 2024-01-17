@@ -30,7 +30,7 @@ type StatsResult = {
     tx_count: number,
 }
 
-type TransactionResult = {
+export type TransactionResult = {
     txid: string,
     version: number,
     locktime: number,
@@ -76,7 +76,7 @@ export class Blockstream implements Provider{
             this.url = url;
         }
     }
-    
+
     getTipHash(): Promise<string> {
         return fetch(this.url + '/blocks/tip/hash')
         .then(response => response.text())
@@ -143,6 +143,10 @@ export class Blockstream implements Provider{
 
     getAddress(address: string): Promise<AddressResult> {
         return request<AddressResult>(this.url + '/address/' + address)
+    }
+
+    getAddressTransactions(address: string): Promise<Array<TransactionResult>> {
+        return request<Array<TransactionResult>>(this.url + '/address/' + address + '/txs')
     }
 
     getTransaction(txid: string): Promise<TransactionResult> {
