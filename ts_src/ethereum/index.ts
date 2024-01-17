@@ -1,9 +1,11 @@
-import { Block, ethers } from 'ethers';
+import { ethers } from 'ethers';
+// import "./providers/AlchemyProvider";
 
 class EthClient {
     // Properties
     provider: ethers.AlchemyProvider;
     apiKey: string;
+    wallet?: ethers.HDNodeWallet; 
     // endpoint: string;
 
     // Constructor
@@ -11,12 +13,20 @@ class EthClient {
       // Alchemy API endpoint
         //this.endpoint = `https://eth-mainnet.alchemyapi.io/v2/${apiKey}`;
         // Create an ethers.js provider using Alchemy
-        const provider = new ethers.AlchemyProvider(undefined, apiKey);
-        console.log(provider);
+        const provider = new ethers.AlchemyProvider('goerli', apiKey);
         this.apiKey = apiKey;
         this.provider = provider;
-        let block = this.getBlockByNumber(19011632);
-        console.log(block);
+    }
+
+    async initialiseWalletFromPhrase(mnemonic: string) {
+        // Create a wallet using the given mnemonic
+        console.log("Mnemonic: " + mnemonic);
+        let wallet = ethers.Wallet.fromPhrase(mnemonic);
+        // Connect the wallet to the provider
+        wallet = wallet.connect(this.provider);
+        // Return the wallet
+        this.wallet = wallet;
+        return wallet;
     }
 
     // Default JSON-RPC methods - may not match ethers's supported functions
@@ -79,21 +89,17 @@ class EthClient {
         return transaction;
     }
 
-    // **TODO** :
+    // **TODO** : No equivalent in Alchemy
     //Returns information about a transaction by block hash and transaction index.
     async getTransactionByBlockHashAndIndex() {
-
+        
     }
 
-    // **TODO** :
-    //Returns information about a transaction by block number and transaction index.
-    async getTransactionByBlockNumberAndIndex() {
-
-    }
-
-    // **TODO** :
+    // **TODO** : 
     //Returns the receipt of a transaction by transaction hash.
-    async getTransactionReceipt() {
+    async getTransactionReceipt(transactionHash: string) {
+        let transactionReceipt = await this.provider.getTransactionReceipt(transactionHash);
+        return transactionReceipt;
 
     }
 
@@ -105,8 +111,9 @@ class EthClient {
 
     // **TODO** :
     //Creates new message call transaction or a contract creation for signed transactions.
-    async sendTransaction() {
-
+    async sendTransaction(transactionData: string) {
+        let transaction = await this.provider.send(transactionData);
+        return transaction;
     }
 
     // **TODO** :
@@ -156,42 +163,27 @@ class EthClient {
     async compileSerpent() {
 
     }
+
+
 }
 
 
 export enum Providers {
     Alchemy,
-    Infura
+    Infura,
+    JsonRpc
 }
 
-console.log("Check this out");
+async function doStuff() {
+    let ethClient = new EthClient("VqDjBvWuSn2RjrjMERoTIRw0VKlkGRRT");
+    let phrase = "mandate rude write gather vivid inform leg swift usual early bamboo element"
+    let test = await ethClient.initialiseWalletFromPhrase(phrase);
+    console.log(ethClient);
+    let balance = await ethClient.getBalance(ethClient.wallet.address);
+    console.log(balance);   
+}
 
-let ethClient = new EthClient("VqDjBvWuSn2RjrjMERoTIRw0VKlkGRRT");
-console.log(ethClient);
-
-// https://www.newline.co/@bespoyasov/how-to-use-fetch-with-typescript--a81ac257
-// Make the `request` function generic
-// to specify the return data type:
-function request<TResponse>(
-    url: string,
-    // `RequestInit` is a type for configuring 
-    // a `fetch` request. By default, an empty object.
-    config: RequestInit = {}
-     
-  // This function is async, it will return a Promise:
-  ): Promise<TResponse> {
-      
-    // Inside, we call the `fetch` function with 
-    // a URL and config given:
-    return fetch(url, config)
-      // When got a response call a `json` method on it
-      .then((response) => response.json())
-      // and return the result data.
-      .then((data) => data as TResponse);
-      
-      // We also can use some post-response
-      // data-transformations in the last `then` clause.
-  }
+doStuff();
 
 /* List of JSON-RPC methods
 
@@ -217,3 +209,4 @@ async compileLLL(): Returns compiled code of an LLL program.
 async compileSerpent(): Returns compiled code of a Serpent program.
 
 */
+
