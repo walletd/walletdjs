@@ -1,5 +1,7 @@
 import { ethers } from 'ethers';
+
 // import "./providers/AlchemyProvider";
+require('dotenv').config();
 
 class EthClient {
     // Properties
@@ -13,7 +15,8 @@ class EthClient {
       // Alchemy API endpoint
         //this.endpoint = `https://eth-mainnet.alchemyapi.io/v2/${apiKey}`;
         // Create an ethers.js provider using Alchemy
-        const provider = new ethers.AlchemyProvider('goerli', apiKey);
+        //const provider = new ethers.AlchemyProvider('goerli', apiKey);
+        const provider = new ethers.AlchemyProvider('sepolia', apiKey);
         this.apiKey = apiKey;
         this.provider = provider;
     }
@@ -103,6 +106,12 @@ class EthClient {
 
     }
 
+    async createRandomWallet() {
+        let wallet = ethers.Wallet.createRandom();
+        console.log(wallet);
+        return wallet;
+    }
+
     // **TODO** :
     //Returns an array of all logs matching a given filter object.
     async getLogs() {
@@ -112,8 +121,9 @@ class EthClient {
     // **TODO** :
     //Creates new message call transaction or a contract creation for signed transactions.
     async sendTransaction(transactionData: string) {
-        let transaction = await this.provider.send(transactionData);
-        return transaction;
+        // let transaction = await this.provider.broadcastTransaction(transactionData);
+        // return transaction;
+        
     }
 
     // **TODO** :
@@ -163,8 +173,6 @@ class EthClient {
     async compileSerpent() {
 
     }
-
-
 }
 
 
@@ -176,11 +184,20 @@ export enum Providers {
 
 async function doStuff() {
     let ethClient = new EthClient("VqDjBvWuSn2RjrjMERoTIRw0VKlkGRRT");
-    let phrase = "mandate rude write gather vivid inform leg swift usual early bamboo element"
+    let phrase = "yellow purity early impulse pair original cotton february jacket measure nothing clock"
     let test = await ethClient.initialiseWalletFromPhrase(phrase);
     console.log(ethClient);
-    let balance = await ethClient.getBalance(ethClient.wallet.address);
-    console.log(balance);   
+    // let balance = await ethClient.getBalance(ethClient.wallet.address);
+    // console.log(balance);   
+    // let newWallet = await ethClient.createRandomWallet();
+    // console.log(newWallet);
+    let balance = await ethClient.getBalance("0xC0cc3358231ABB32F4ddED3336Bfc813BeA7932b");
+    console.log(balance);
+    // let sendTx = await ethClient.wallet.sendTransaction({
+    //     to: "0xC0cc3358231ABB32F4ddED3336Bfc813BeA7932b",
+    //     value: ethers.parseEther("0.00001")
+    // });
+    // console.log(sendTx);
 }
 
 doStuff();
