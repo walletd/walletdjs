@@ -183,10 +183,13 @@ export enum Providers {
 }
 
 async function doStuff() {
+    let phrase = process.env.MNEMONIC;
     let ethClient = new EthClient("VqDjBvWuSn2RjrjMERoTIRw0VKlkGRRT");
-    let phrase = "yellow purity early impulse pair original cotton february jacket measure nothing clock"
-    let test = await ethClient.initialiseWalletFromPhrase(phrase);
-    console.log(ethClient);
+
+    console.log(phrase);
+    // let phrase = ""
+    // let test = await ethClient.initialiseWalletFromPhrase(phrase);
+    // console.log(ethClient);
     // let balance = await ethClient.getBalance(ethClient.wallet.address);
     // console.log(balance);   
     // let newWallet = await ethClient.createRandomWallet();
