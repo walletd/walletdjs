@@ -145,7 +145,7 @@ class Wallet {
               "outgoing",
               tx.txid,
               tx.fee,
-              confirmedSpent - confirmedReceived - tx.fee,
+              confirmedSpent - confirmedReceived,
               tx.status.confirmed,
               address.address,
               tx.status.block_time,
@@ -242,7 +242,7 @@ class Transaction {
 }
 (async () => {
   const wallet = new Wallet(
-    "crew secret spare arrow blanket salute trash similar coin illness asthma urban olympic sugar heavy brave pulse museum foil feed crouch brief desk wish",
+    "circle chalk surface fee finish fever turkey usage ask horse attitude trumpet",
   );
   //const wallet = Wallet.generate();
   // console.log(wallet.mnemonic);
