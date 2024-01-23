@@ -10,6 +10,30 @@ export enum Providers {
 export interface Provider {
     getBlockByHash: (hash: string) => Promise<BlockResult>;
     getBlockNumber: () => Promise<number>;
+    getTransaction: (hash: string) => Promise<TransactionInterface>;
+}
+
+export interface Input {
+    txId: string;
+    vout: number;
+    script: string;
+    sequence: string;
+}
+
+export interface Output {
+    value: number;
+    script: string;
+    address?: string;
+}
+
+export interface TransactionInterface {
+    txId: string;
+    txHex: string;
+    vsize: number;
+    version: number;
+    locktime: number;
+    ins: Input[];
+    outs: Output[];
 }
 
 export type BlockResult = {
