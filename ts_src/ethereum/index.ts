@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { BigNumberish, FixedNumber, ethers } from 'ethers';
 
 // import "./providers/AlchemyProvider";
 require('dotenv').config();
@@ -129,9 +129,9 @@ class EthClient {
         return new ethers.Transaction();
     }
 
-    async gasPrice() {
-        let price = await this.provider.getFeeData();
-        return price;
+    async feeData(): Promise<ethers.FeeData> {
+        let fees = await this.provider.getFeeData();
+        return fees;
     }
 
     // A non-rpc method designed for convenience
@@ -157,8 +157,13 @@ class EthClient {
 
     // **TODO** : These are JSON-RPC commands
     //Generates and returns an estimate of how much gas is necessary to allow the transaction to complete.
-    async estimateGas(transactionRequest: ethers.TransactionRequest) {
+    async estimateGweiFee(transaction: ethers.Transaction): Promise<ethers.FixedNumber> {
+        let totalGas = await this.provider.estimateGas(transaction);     // the same transaction parameters you would pass when sending a transaction
         
+        const totalGasFixedNumber = ethers.FixedNumber.fromValue(totalGas);
+        let divisor: ethers.FixedNumber = ethers.FixedNumber.fromValue(1000);
+        let gwei = totalGasFixedNumber.div(divisor);
+        return gwei;
     }
 
     // **TODO** : These are JSON-RPC commands
@@ -173,23 +178,23 @@ class EthClient {
 
     }
 
-    // **TODO** : These are JSON-RPC commands
-    //Returns compiled code of a Solidity smart contract.
-    async compileSolidity() {
+    // // **TODO** : These are JSON-RPC commands
+    // //Returns compiled code of a Solidity smart contract.
+    // async compileSolidity() {
 
-    }
+    // }
 
-    // **TODO** : These are JSON-RPC commands
-    //Returns compiled code of an LLL program.
-    async compileLLL() {
+    // // **TODO** : These are JSON-RPC commands
+    // //Returns compiled code of an LLL program.
+    // async compileLLL() {
 
-    }
+    // }
 
-    // **TODO** : These are JSON-RPC commands 
-    //Returns compiled code of a Serpent program.
-    async compileSerpent() {
+    // // **TODO** : These are JSON-RPC commands 
+    // //Returns compiled code of a Serpent program.
+    // async compileSerpent() {
 
-    }
+    // }
 }
 
 
@@ -209,32 +214,23 @@ async function doStuff() {
     transaction.value = ethers.parseEther("0.00001");
     transaction.data = "0x00614d6a4c73366a6cd58354a2a3bc7cd400000000017678dadae1cff0c3678194d3c763aad7ea9476756c64089cec39db6b5f5dc2baeb972357e6b5ae6c5f685bd5ec1714b78035fc89b927db841d2b844daf4cbcbb69b55386b2da1dc17c7da1a2a556868c8b9c5a52d7c5fc3a003130526fd34e75079943af9f74d83f48e9d59d50adc81bd2dae89034f9d6da934b8c7b9afd82e217d4f6681da8d6a9324866fff8f1408fded28c798abb5ddbe7f7ed79f7e4941a4b9920c8c03f500319993eebae96374b7310cb100ef394d1bbd7f6aa5f35ffaccd150d998de5dca9738836f01fd440c31e4537736f8f188fab33effa7cfbf57fdbeccd4baf4bf3de0c11962f3bd2ba7f05b106c632400d142dbed23c8fb143374d7391e8ccdd3b7445fe726e8daefbe01134c5613b7bd94f11a20d64821a5893726796eacc336b667afdefe9bd752f4431fca0e39737391fc2eb5757312db7ca20da4016a881eadf7d67ce98d2177ef8d7e62747fec83c64e49cff436c6703c7922aeb6937368596106d20db0140000000ffff49670ff901";
 
-    // Example fee calculation
+    // const gasFee = fees.gasPrice;  // Replace with your preferred gas price
+    //const gasPriceInGwei = ethers.parseUnits(gasPrice.toString(), 'gwei');
 
-    let fees = await ethClient.gasPrice();
-    console.log(fees);
+    let gasTotal = await ethClient.estimateGweiFee(transaction);
+    //let gwei = ethers.formatUnits(gasTotal, 'gwei');
+    console.log(gasTotal + " ");
+    // const feeInWei = ethers.bigNumberify(gasPrice).mul(gasLimit);
 
-    const gasPrice = fees.gasPrice;  // Replace with your preferred gas price
-    const gasPriceInGwei = ethers.parseUnits(gasPrice.toString(), 'gwei');
+    // console.log('Gas Price:', gasPriceInGwei, 'Gwei');
+    // console.log('Gas Limit:', fees.maxFeePerGas);
+    // console.log('Transaction Fee:', feeInEther, 'Ether');
 
-// const feeInWei = ethers.bigNumberify(gasPrice).mul(gasLimit);
-
-console.log('Gas Price:', gasPriceInGwei, 'Gwei');
-console.log('Gas Limit:', fees.maxFeePerGas);
-console.log('Transaction Fee:', feeInEther, 'Ether');
-
-const gasAmount = await ethClient.provider.estimateGas({
-    // the same transaction parameters you would pass when sending a transaction
-    to: "0xC0cc3358231ABB32F4ddED3336Bfc813BeA7932b",
-    data: "0x00614d6a4c73366a6cd58354a2a3bc7cd400000000017678dadae1cff0c3678194d3c763aad7ea9476756c64089cec39db6b5f5dc2baeb972357e6b5ae6c5f685bd5ec1714b78035fc89b927db841d2b844daf4cbcbb69b55386b2da1dc17c7da1a2a556868c8b9c5a52d7c5fc3a003130526fd34e75079943af9f74d83f48e9d59d50adc81bd2dae89034f9d6da934b8c7b9afd82e217d4f6681da8d6a9324866fff8f1408fded28c798abb5ddbe7f7ed79f7e4941a4b9920c8c03f500319993eebae96374b7310cb100ef394d1bbd7f6aa5f35ffaccd150d998de5dca9738836f01fd440c31e4537736f8f188fab33effa7cfbf57fdbeccd4baf4bf3de0c11962f3bd2ba7f05b106c632400d142dbed23c8fb143374d7391e8ccdd3b7445fe726e8daefbe01134c5613b7bd94f11a20d64821a5893726796eacc336b667afdefe9bd752f4431fca0e39737391fc2eb5757312db7ca20da4016a881eadf7d67ce98d2177ef8d7e62747fec83c64e49cff436c6703c7922aeb6937368596106d20db0140000000ffff49670ff901",
-    value: ethers.parseEther("0.1")
-});
-
-    console.log(`Gas amount needed: ${gasAmount} gwei`);
-    let gasTotal = ethers.formatEther(gasAmount * gasPrice);
-    console.log(`Total gas fee for transaction which is neeeded: ${gasTotal}`);
-    let gasTotalInGwei = ethers.parseUnits(gasTotal, 'gwei');
-    console.log(`Total estimated gas fee (gasamount * gasprice): ${gasTotalInGwei}`);
+    //console.log(`Gas amount needed: ${gasAmount} gwei`);
+    //let gasTotal = ethers.formatEther(gasAmount * gasPrice);
+    //console.log(`Total gas fee for transaction which is neeeded: ${gasTotal}`);
+    //let gasTotalInGwei = ethers.parseUnits(gasTotal, 'gwei');
+    //console.log(`Total estimated gas fee (gasamount * gasprice): ${gasTotalInGwei}`);
     // async prepareTransaction(toAddress: string, transactionData: string) {
     // let phrase = ""
     // let test = await ethClient.initialiseWalletFromPhrase(phrase);
