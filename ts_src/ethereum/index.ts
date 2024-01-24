@@ -1,4 +1,4 @@
-import { Block, BigNumberish, FixedNumber, ethers, TransactionResponse } from 'ethers';
+import { Block, BigNumberish, FixedNumber, ethers, Transaction, TransactionResponse } from 'ethers';
 
 // import "./providers/AlchemyProvider";
 require('dotenv').config();
@@ -22,7 +22,7 @@ class EthClient {
 
     // Non-RPC
     // TODO: Change to use keystore
-    initialiseWalletFromPhrase(mnemonic: string) {
+    initialiseWalletFromPhrase(mnemonic: string): void {
         // Create a wallet using the given mnemonic
         let wallet = ethers.Wallet.fromPhrase(mnemonic);
         // Connect the wallet to the provider
@@ -35,7 +35,7 @@ class EthClient {
 
     // **TODO** : These are JSON-RPC commands
     // Returns the number of most recent block.
-    async blockNumber() {
+    async blockNumber(): Promise<number> {
         let blockNumber = await this.provider.getBlockNumber();
         return blockNumber;
     }
@@ -86,15 +86,22 @@ class EthClient {
 
     // **TODO** : These are JSON-RPC commands
     //Returns the information about a transaction requested by transaction hash.
-    async getTransactionByHash(hash: string) {
+    async getTransactionByHash(hash: string): Promise<TransactionResponse | null>{
         let transaction = await this.provider.getTransaction(hash);
         return transaction;
     }
 
     // **TODO** : These are JSON-RPC commands - No equivalent in Alchemy
     //Returns information about a transaction by block hash and transaction index.
-    async getTransactionByBlockHashAndIndex() {
-        
+    // async getTransactionByBlockHashAndIndex(hash: string, index: number): Promise<Transaction | null> {
+    async getTransactionByBlockHashAndIndex(hash: string, index: number) {
+        // Cannot implement using standard ethers.js provider
+        let block = await this.getBlockByHash(hash);
+        if (block == null) {
+            return null;
+        }
+        let transaction = block.transactions[index];
+        return transaction;
     }
 
     // **TODO** : These are JSON-RPC commands 
@@ -102,7 +109,6 @@ class EthClient {
     async getTransactionReceipt(transactionHash: string) {
         let transactionReceipt = await this.provider.getTransactionReceipt(transactionHash);
         return transactionReceipt;
-
     }
 
     // Non JSON-RPC method
@@ -121,8 +127,8 @@ class EthClient {
 
     // **TODO** : These are JSON-RPC commands
     //Creates new message call transaction or a contract creation for signed transactions.
-    async sendTransaction() {
-
+    async sendTransaction(tx: Transaction) {
+        // We may need to sign the transaction before sending it
     }
     
     // A method that returns a transaction so that fields can be specified before sending it 
@@ -175,15 +181,16 @@ class EthClient {
 
     // **TODO** : These are JSON-RPC commands
     //Returns code at a given address.
-    async getCode() {
-
+    async getCode(address: string, blockTagOrNumberOrHash?: string): Promise<string> {
+        let code = await this.provider.getCode(address, blockTagOrNumberOrHash);
+        return code;
     }
 
     // **TODO** : These are JSON-RPC commands
     //Returns a list of available compilers in the client.
-    async getCompilers() {
+    // async getCompilers() {
 
-    }
+    // }
 
     // // **TODO** : These are JSON-RPC commands
     // //Returns compiled code of a Solidity smart contract.
