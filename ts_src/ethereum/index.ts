@@ -24,7 +24,6 @@ class EthClient {
     // TODO: Change to use keystore
     initialiseWalletFromPhrase(mnemonic: string) {
         // Create a wallet using the given mnemonic
-        console.log("Mnemonic: " + mnemonic);
         let wallet = ethers.Wallet.fromPhrase(mnemonic);
         // Connect the wallet to the provider
         wallet = wallet.connect(this.provider);
@@ -137,11 +136,16 @@ class EthClient {
     }
 
     // A non-rpc method designed for convenience
-    async sendEther(toAddress: string, value: string): Promise<TransactionResponse> {
+    async sendEther(toAddress: string, value: string): Promise<TransactionResponse | Error> {
         let tx = {
-            to: "0xC0cc3358231ABB32F4ddED3336Bfc813BeA7932b",
-            value: ethers.parseEther("0.00001")
+            to: toAddress,
+            value: ethers.parseEther(value)
         }
+
+        if (this.wallet == undefined) {
+            return Error("Wallet not initialised");
+        }
+
         let sendTx = await this.wallet.sendTransaction(tx);
         return sendTx;        
     }
@@ -241,11 +245,11 @@ async function doStuff() {
     // console.log(newWallet);
     let balance = await ethClient.getBalance("0xC0cc3358231ABB32F4ddED3336Bfc813BeA7932b");
     console.log(`Balance: ${balance}`);
-    // let sendTx = await ethClient.wallet.sendTransaction({
-    //     to: "0xC0cc3358231ABB32F4ddED3336Bfc813BeA7932b",
-    //     value: ethers.parseEther("0.00001")
-    // });
-    // console.log(sendTx);
+    let sendTx = await ethClient.sendEther(
+        '0xC0cc3358231ABB32F4ddED3336Bfc813BeA7932b',
+        "0.00001"
+    );
+    console.log("Type:" + typeof(sendTx) + " " + sendTx);
 }
 
 doStuff();
