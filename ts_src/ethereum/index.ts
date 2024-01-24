@@ -143,10 +143,9 @@ class EthClient {
 
     // A non-rpc method designed for convenience
     async sendEther(toAddress: string, value: string): Promise<TransactionResponse | Error> {
-        let tx = {
-            to: toAddress,
-            value: ethers.parseEther(value)
-        }
+        let tx: Transaction = new Transaction();
+        tx.to = toAddress;
+        tx.value = ethers.parseEther(value);
 
         if (this.wallet == undefined) {
             return Error("Wallet not initialised");
