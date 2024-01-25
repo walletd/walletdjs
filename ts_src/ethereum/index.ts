@@ -1,21 +1,21 @@
-import { Block, BigNumberish, FixedNumber, ethers, Transaction, TransactionResponse } from 'ethers';
+import { AlchemyProvider, Block, FeeData, FixedNumber, HDNodeWallet, Log, ethers, Transaction, TransactionResponse, Filter, Wallet } from 'ethers';
 
-// import "./providers/AlchemyProvider";
 require('dotenv').config();
 
 class EthClient {
     // Properties
-    provider: ethers.AlchemyProvider;
+    provider: AlchemyProvider;
     apiKey: string;
-    wallet?: ethers.HDNodeWallet; 
+    wallet?: HDNodeWallet; 
     // endpoint: string;
 
     // Constructor
+    // Presently only supports Alchemy
     // To-do: Allow specification of providers (Alchemy, Infura, etc.)
     constructor(apiKey: string, networkId: number = 1, chainId: number = 1) {
         
         // Initialise an ethers.js provider using Alchemy
-        const provider = new ethers.AlchemyProvider('sepolia', apiKey);
+        const provider = new AlchemyProvider('sepolia', apiKey);
         this.apiKey = apiKey;
         this.provider = provider;
     }
@@ -24,7 +24,7 @@ class EthClient {
     // TODO: Change to use keystore
     initialiseWalletFromPhrase(mnemonic: string): void {
         // Create a wallet using the given mnemonic
-        let wallet = ethers.Wallet.fromPhrase(mnemonic);
+        let wallet = Wallet.fromPhrase(mnemonic);
         // Connect the wallet to the provider
         wallet = wallet.connect(this.provider);
         // Return the wallet
@@ -33,21 +33,21 @@ class EthClient {
 
     // Default JSON-RPC methods - may not match ethers.js's supported functions
 
-    // **TODO** : These are JSON-RPC commands
+    // Official JSON-RPC commands supported by Ethereum nodes
     // Returns the number of most recent block.
     async blockNumber(): Promise<number> {
         let blockNumber = await this.provider.getBlockNumber();
         return blockNumber;
     }
 
-    // **TODO** : These are JSON-RPC commands
+    // Official JSON-RPC commands supported by Ethereum nodes
     //Returns the balance of the account of a given address.
     async getBalance(address: string): Promise<bigint> {
         let balance = await this.provider.getBalance(address);
         return balance;
     }
 
-    // **TODO** : These are JSON-RPC commands
+    // Official JSON-RPC commands supported by Ethereum nodes
     // Returns the value from a storage position at a given address.
     // address: Address to get storage from
     // slotPosition: The position in the storage to get the value from (in hex)
@@ -62,21 +62,21 @@ class EthClient {
         return storage;
     }
 
-    // **TODO** : These are JSON-RPC commands
+    // Official JSON-RPC commands supported by Ethereum nodes
     // Returns the number of transactions sent from an address.
     async getTransactionCount(address: string, blockTagOrNumberOrHash?: string): Promise<number> {
         let transactionCount: number = await this.provider.getTransactionCount(address, blockTagOrNumberOrHash);
         return transactionCount;
     }
 
-    // Returns a Block by its number
+    // Official JSON-RPC commands supported by Ethereum nodes
     // Duplicates the getBlock function, but we want to stick as closely to the original JSON-RPC commands
     async getBlockByNumber(number: number): Promise<Block | null> {
         let block = await this.provider.getBlock(number);
         return block;
     }
 
-    // **TODO** : These are JSON-RPC commands
+    // Official JSON-RPC commands supported by Ethereum nodes
     // Returns information about a block based on its hash.
     // Duplicates the getBlock function, but we want to stick as closely to the original JSON-RPC commands
     async getBlockByHash(hash: string): Promise<Block | null> {
@@ -84,15 +84,15 @@ class EthClient {
         return block;
     }
 
-    // **TODO** : These are JSON-RPC commands
+    // Official JSON-RPC commands supported by Ethereum nodes - No equivalent in ethers
     //Returns the information about a transaction requested by transaction hash.
     async getTransactionByHash(hash: string): Promise<TransactionResponse | null>{
         let transaction = await this.provider.getTransaction(hash);
         return transaction;
     }
 
-    // **TODO** : These are JSON-RPC commands - No equivalent in Alchemy
-    //Returns information about a transaction by block hash and transaction index.
+    // Official JSON-RPC commands supported by Ethereum nodes - No equivalent in Alchemy
+    // Returns information about a transaction by block hash and transaction index.
     // async getTransactionByBlockHashAndIndex(hash: string, index: number): Promise<Transaction | null> {
     async getTransactionByBlockHashAndIndex(hash: string, index: number) {
         // Cannot implement using standard ethers.js provider
@@ -104,48 +104,53 @@ class EthClient {
         return transaction;
     }
 
-    // **TODO** : These are JSON-RPC commands 
-    //Returns the receipt of a transaction by transaction hash.
+    // Official JSON-RPC commands supported by Ethereum nodes
+    // Returns the receipt of a transaction by transaction hash.
     async getTransactionReceipt(transactionHash: string) {
         let transactionReceipt = await this.provider.getTransactionReceipt(transactionHash);
         return transactionReceipt;
     }
 
     // Non JSON-RPC method
-    // Remove when we consolidate the keystore
+    // TODO: Refactor when we consolidate the keystore
     async createNewWallet() {
-        let wallet = ethers.Wallet.createRandom();
+        let wallet = Wallet.createRandom();
         console.log(wallet);
         return wallet;
     }
 
-    // **TODO** : These are JSON-RPC commands
-    //Returns an array of all logs matching a given filter object.
-    async getLogs() {
-
+    // Official JSON-RPC commands supported by Ethereum nodes
+    // Returns an array of all logs matching a given filter object.
+    async getLogs(filter: Filter): Promise<Array<Log>> {
+        let logs = await this.provider.getLogs(filter);
+        return logs;
     }
 
-    // **TODO** : These are JSON-RPC commands
-    //Creates new message call transaction or a contract creation for signed transactions.
+    // TO-DO: Finish - Official JSON-RPC commands supported by Ethereum nodes
+    // Creates new message call transaction or a contract creation for signed transactions.
     async sendTransaction(tx: Transaction) {
         // We may need to sign the transaction before sending it
     }
     
     // A method that returns a transaction so that fields can be specified before sending it 
     prepareTransaction() {
-        return new ethers.Transaction();
+        return new Transaction();
     }
 
-    async feeData(): Promise<ethers.FeeData> {
+    // Non-rpc method
+    // Returns the fee data for the current network
+    async feeData(): Promise<FeeData> {
         let fees = await this.provider.getFeeData();
         return fees;
     }
 
+
     // A non-rpc method designed for convenience
-    async sendEther(toAddress: string, value: string): Promise<TransactionResponse | Error> {
+    // Sends a transaction to the given address with the given Ethereum value
+    async sendEther(toAddress: string, ethereumValue: string): Promise<TransactionResponse | Error> {
         let tx: Transaction = new Transaction();
         tx.to = toAddress;
-        tx.value = ethers.parseEther(value);
+        tx.value = ethers.parseEther(ethereumValue);
 
         if (this.wallet == undefined) {
             return Error("Wallet not initialised");
@@ -155,56 +160,55 @@ class EthClient {
         return sendTx;        
     }
 
-    // **TODO** : These are JSON-RPC commands
+    // Official JSON-RPC commands supported by Ethereum nodes
     //Sends a raw transaction.
-    async sendRawTransaction() {
+    // async sendRawTransaction() {
 
-    } 
+    // } 
 
-    // **TODO** : These are JSON-RPC commands
+    // Official JSON-RPC commands supported by Ethereum nodes
     //Executes a new message call immediately without creating a transaction on the blockchain.
-    async call() {
+    // async call() {
 
-    }
+    // }
 
-    // **TODO** : These are JSON-RPC commands
-    //Generates and returns an estimate of how much gas is necessary to allow the transaction to complete.
-    async estimateGweiFee(transaction: ethers.Transaction): Promise<ethers.FixedNumber> {
-        let totalGas = await this.provider.estimateGas(transaction);     // the same transaction parameters you would pass when sending a transaction
-        
-        const totalGasFixedNumber = ethers.FixedNumber.fromValue(totalGas);
-        let divisor: ethers.FixedNumber = ethers.FixedNumber.fromValue(1000);
-        let gwei = totalGasFixedNumber.div(divisor);
+    // Non-JSON-RPC command
+    // Generates and returns an estimate of how much gas (in gwei units) is necessary to fund the completion of the transaction.
+    async estimateGweiFee(transaction: Transaction): Promise<FixedNumber> {
+        const totalGas = await this.provider.estimateGas(transaction);
+        const totalGasFixedNumber = FixedNumber.fromValue(totalGas);
+        const divisor: FixedNumber = FixedNumber.fromValue(1000);
+        const gwei = totalGasFixedNumber.div(divisor);
         return gwei;
     }
 
-    // **TODO** : These are JSON-RPC commands
-    //Returns code at a given address.
+    // Official JSON-RPC commands supported by Ethereum nodes
+    // Returns code at a given address.
     async getCode(address: string, blockTagOrNumberOrHash?: string): Promise<string> {
         let code = await this.provider.getCode(address, blockTagOrNumberOrHash);
         return code;
     }
 
-    // **TODO** : These are JSON-RPC commands
-    //Returns a list of available compilers in the client.
+    // Official JSON-RPC commands supported by Ethereum nodes
+    // Returns a list of available compilers in the client.
     // async getCompilers() {
 
     // }
 
-    // // **TODO** : These are JSON-RPC commands
-    // //Returns compiled code of a Solidity smart contract.
+    // Official JSON-RPC commands supported by Ethereum nodes
+    // Returns compiled code of a Solidity smart contract.
     // async compileSolidity() {
 
     // }
 
-    // // **TODO** : These are JSON-RPC commands
-    // //Returns compiled code of an LLL program.
+    // Official JSON-RPC commands supported by Ethereum nodes
+    // Returns compiled code of an LLL program.
     // async compileLLL() {
 
     // }
 
-    // // **TODO** : These are JSON-RPC commands 
-    // //Returns compiled code of a Serpent program.
+    // Official JSON-RPC commands supported by Ethereum nodes
+    // Returns compiled code of a Serpent program.
     // async compileSerpent() {
 
     // }
@@ -218,14 +222,20 @@ export enum Providers {
 }
 
 async function doStuff() {
-    let phrase = process.env.MNEMONIC;
     let ethClient = new EthClient("VqDjBvWuSn2RjrjMERoTIRw0VKlkGRRT");
     
+    let envPhrase = process.env.MNEMONIC;
+    if (typeof(envPhrase) == undefined) {
+        console.log("Mnemonic not found in environment variables");
+    } else {
+        let phrase = envPhrase as string;
+        await ethClient.initialiseWalletFromPhrase(phrase);
+    }
 
     let transaction = ethClient.prepareTransaction();    
 
     // const gasFee = fees.gasPrice;  // Replace with your preferred gas price
-    //const gasPriceInGwei = ethers.parseUnits(gasPrice.toString(), 'gwei');
+    // const gasPriceInGwei = ethers.parseUnits(gasPrice.toString(), 'gwei');
 
     let gasTotal = await ethClient.estimateGweiFee(transaction);
     //let gwei = ethers.formatUnits(gasTotal, 'gwei');
@@ -243,7 +253,6 @@ async function doStuff() {
     //console.log(`Total estimated gas fee (gasamount * gasprice): ${gasTotalInGwei}`);
     // async prepareTransaction(toAddress: string, transactionData: string) {
     // let phrase = ""
-    // let test = await ethClient.initialiseWalletFromPhrase(phrase);
     // console.log(ethClient);
     // let balance = await ethClient.getBalance(ethClient.wallet.address);
     // console.log(balance);   
