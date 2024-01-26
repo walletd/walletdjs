@@ -12,7 +12,7 @@ class EthClient {
     // Constructor
     // Presently only supports Alchemy
     // To-do: Allow specification of providers (Alchemy, Infura, etc.)
-    constructor(apiKey: string, networkId: number = 1, chainId: number = 1) {
+    constructor(apiKey: string) {
         
         // Initialise an ethers.js provider using Alchemy
         const provider = new AlchemyProvider('sepolia', apiKey);
@@ -130,6 +130,7 @@ class EthClient {
     // Creates new message call transaction or a contract creation for signed transactions.
     async sendTransaction(tx: Transaction) {
         // We may need to sign the transaction before sending it
+        
     }
     
     // A method that returns a transaction so that fields can be specified before sending it 
@@ -148,9 +149,11 @@ class EthClient {
     // A non-rpc method designed for convenience
     // Sends a transaction to the given address with the given Ethereum value
     async sendEther(toAddress: string, ethereumValue: string): Promise<TransactionResponse | Error> {
-        let tx: Transaction = new Transaction();
+        let tx = this.prepareTransaction();
         tx.to = toAddress;
         tx.value = ethers.parseEther(ethereumValue);
+        tx.chainId = (await this.provider.getNetwork()).chainId;
+        tx.gasLimit = 21000;
 
         if (this.wallet == undefined) {
             return Error("Wallet not initialised");
@@ -233,6 +236,7 @@ async function doStuff() {
     }
 
     let transaction = ethClient.prepareTransaction();    
+    
 
     // const gasFee = fees.gasPrice;  // Replace with your preferred gas price
     // const gasPriceInGwei = ethers.parseUnits(gasPrice.toString(), 'gwei');
