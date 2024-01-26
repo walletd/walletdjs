@@ -15,6 +15,7 @@ export enum AddressType {
   }
 
 export interface InputInterface {
+    address?: string;
     hash: string;
     index: number;
     nonWitnessUtxo?: Buffer;
@@ -33,7 +34,7 @@ export class Wallet {
     addresses: Array<Address> = [];
     transactions: Array<Transaction> = [];
     addressType: AddressType = AddressType.p2wpkh;
-    addressFlat: Array<string> = [];
+    addressNew: Array<AddressNew> = [];
     unspent: Array<InputInterface> = [];
 
     constructor(mnemonic: string, type?: AddressType) {
@@ -48,41 +49,56 @@ export class Wallet {
         if (this.addressType === AddressType.p2wpkh) {
             this.root = this.root.derivePath("m/84'/1'/0'");
         }
-        this.addressFlat.push(this.generateAddress()?.address!);
-        this.addressFlat.push(this.generateAddress(1)?.address!);
-        this.addressFlat.push(this.generateAddress(2)?.address!);
-        this.addressFlat.push(this.generateAddress(3)?.address!);
-        this.addressFlat.push(this.generateAddress(4)?.address!);
-        this.addressFlat.push(this.generateAddress(5)?.address!);
-        this.addressFlat.push(this.generateAddress(6)?.address!);
-        this.addressFlat.push(this.generateAddress(7)?.address!);
-        this.addressFlat.push(this.generateAddress(8)?.address!);
-        this.addressFlat.push(this.generateAddress(9)?.address!);
-        this.addressFlat.push(this.generateAddress(10)?.address!);
+        this.addressNew.push(this.generateAddress());
+        this.addressNew.push(this.generateAddress(1));
+        this.addressNew.push(this.generateAddress(2));
+        this.addressNew.push(this.generateAddress(3));
+        this.addressNew.push(this.generateAddress(4));
+        this.addressNew.push(this.generateAddress(5));
+        this.addressNew.push(this.generateAddress(6));
+        this.addressNew.push(this.generateAddress(7));
+        this.addressNew.push(this.generateAddress(8));
+        this.addressNew.push(this.generateAddress(9));
+        this.addressNew.push(this.generateAddress(10));
     }
 
     async syncTransaction(txid: string, provider: Provider) : Promise<Array<InputInterface>> {
-        return new Promise(async (resolve) => {
-            let spendables: Array<InputInterface> = Array()
-            let transaction = await provider.getTransaction(txid);
-            let i = 0;
-            transaction.outs.forEach(output => {
-            
-                let addressIndex = this.addressFlat.indexOf(output.address ?? '');
-                if (addressIndex !== -1) {
-                    spendables.push({
+        let spendables: Array<InputInterface> = Array()
+        let transaction = await provider.getTransaction(txid);
+        let i = 0;
+        const addresses = this.addressNew.map(address => address.address)
+        transaction.outs.forEach(output => {
+            let addressIndex = addresses.indexOf(output.address ?? '');
+            if (addressIndex !== -1) {
+                spendables.push({
+                    address: output.address,
                     hash: transaction.txId,
                     index: i,
                     nonWitnessUtxo: Buffer.from(transaction.txHex, 'hex'),
                     //script: Buffer.from(output.script, 'hex'),
                     value: output.value
-                    })
-                }
-                i++
-            })
-            this.unspent.push(...spendables);
-            resolve(spendables);
+                })
+            }
+            i++
         })
+        this.unspent.push(...spendables);
+        return spendables;
+    }
+
+    async send(amount: number, address: string, provider: Provider) : Promise<string> {
+        const psbt = buildp2pkh(this.unspent, [amount], [address], this.network)
+        let keyPairs = Array<BIP32Interface>();
+        for (const unspent of this.unspent) {
+            const keyPair = this.addressNew.find((addressNew) => addressNew.address === unspent.address)?.keyPair
+            if (keyPair !== undefined) {
+                keyPairs.push(keyPair);
+            }
+        }
+        const tx = signp2pkh(psbt, keyPairs)
+        // console.log(tx)
+        // build and broadcast to the Bitcoin Local RegTest server
+        await provider.broadcast(tx.toHex())
+        return tx.getId(); 
     }
 
     static generate() : Wallet {
@@ -304,7 +320,7 @@ class Transaction {
     }
 }
 
-export function buildp2pkh(unspents: Array<InputInterface>, amounts: Array<number>, addresses: Array<AddressNew>, network: bitcoin.Network): bitcoin.Psbt {
+export function buildp2pkh(unspents: Array<InputInterface>, amounts: Array<number>, addresses: Array<string>, network: bitcoin.Network): bitcoin.Psbt {
     const fee = 1e5;
     let spendable = 0
     let amount = 0
@@ -325,24 +341,23 @@ export function buildp2pkh(unspents: Array<InputInterface>, amounts: Array<numbe
     let i = 0;
     for (let unspent of unspents) {
         psbt.addInput(
-            unspent
-        // {
-            // hash: unspent.txId, 
-            // index: unspent.vout,
-            // nonWitnessUtxo: Buffer.from(transaction.txHex, 'hex')
+        {
+            hash: unspent.hash, 
+            index: unspent.index,
+            nonWitnessUtxo: unspent.nonWitnessUtxo,
             // witnessUtxo: {
             //     script: Buffer.from(transaction.outs[unspent.vout].script, 'hex'),
             //     value: transaction.outs[unspent.vout].value
             // }
-        // }
+        }
         )
         i++;
     }
     let j = 0;
     for (let address of addresses) {
-        if (address.address !== undefined) {
+        if (address !== undefined) {
             psbt.addOutput({
-                address: address.address, 
+                address: address, 
                 value: amounts[j]
             })
         }
@@ -350,9 +365,9 @@ export function buildp2pkh(unspents: Array<InputInterface>, amounts: Array<numbe
     }
     // Send the change back
     if (spendable - amount - fee > 0) {
-        if (addresses[0].address !== undefined) {
+        if (addresses[0] !== undefined) {
             psbt.addOutput({
-                address: addresses[0].address, // this change address should be generated from the wallet
+                address: addresses[0], // this change address should be generated from the wallet
                 value: spendable - amount - fee
             })
         }

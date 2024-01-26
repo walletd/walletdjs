@@ -72,7 +72,33 @@ class Blockstream {
     return request(this.url + "/address/" + address + "/txs");
   }
   getTransaction(txid) {
-    return request(this.url + "/tx/" + txid);
+    return request(this.url + "/tx/" + txid).then((data) => {
+      return {
+        txId: data.txid,
+        txHex: "",
+        vsize: data.size,
+        version: data.version,
+        locktime: data.locktime,
+        ins: data.vin.map((vin) => {
+          return {
+            txId: vin.txid,
+            vout: vin.vout,
+            script: vin.scriptsig,
+            sequence: "" + vin.sequence,
+          };
+        }),
+        outs: data.vout.map((vout) => {
+          return {
+            value: vout.value,
+            script: vout.scriptpubkey,
+            address: vout.scriptpubkey_address,
+          };
+        }),
+      };
+    });
+  }
+  broadcast(txHex) {
+    throw new Error("Method not implemented." + txHex);
   }
 }
 exports.Blockstream = Blockstream;

@@ -1,16 +1,16 @@
 import {Blockstream, TransactionResult} from './blockstream';
-import { Blockchaincom } from './blockchaincom';
 
-export { Blockstream, Blockchaincom, TransactionResult };
+export { Blockstream, TransactionResult };
 
 export enum Providers {
     Blockstream,
-    Blockchaincom
+    RegTest
 }
 export interface Provider {
     getBlockByHash: (hash: string) => Promise<BlockResult>;
     getBlockNumber: () => Promise<number>;
     getTransaction: (hash: string) => Promise<TransactionInterface>;
+    broadcast: (txHex: string) => Promise<null>;
 }
 
 export interface Input {

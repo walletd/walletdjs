@@ -29,15 +29,16 @@
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "3.1.1",
+    "regtest-client": "^0.2.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3",
-    "regtest-client": "^0.2.1"
+    "typescript": "^5.3.3"
   },
   "dependencies": {
     "@types/sjcl": "^1.0.34",
     "bip32": "^4.0.0",
     "bip39": "^3.1.0",
     "bitcoinjs-lib": "^6.1.5",
+    "node-fetch": "^2.7",
     "rimraf": "^5.0.5",
     "sjcl": "^1.0.8",
     "tiny-secp256k1": "^2.2.3"

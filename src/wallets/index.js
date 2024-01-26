@@ -1,271 +1,93 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const ecc = require("tiny-secp256k1");
-const bitcoin = require("bitcoinjs-lib");
-const bip32_1 = require("bip32");
-const bip39 = require("bip39");
-const providers_1 = require("../providers");
-const bip32 = (0, bip32_1.default)(ecc);
-class Wallet {
-  constructor(mnemonic) {
-    this.network = bitcoin.networks.testnet;
-    this.lookahead = 10;
-    this.addresses = [];
-    this.transactions = [];
-    this.mnemonic = mnemonic;
-    this.seed = bip39.mnemonicToSeedSync(mnemonic);
-    this.root = bip32.fromSeed(this.seed);
-    this.legacyAddress = this.generateLegacyAddress();
-    this.primaryAddress = this.generateAddress();
-  }
-  static generate() {
-    return new Wallet(bip39.generateMnemonic(256));
-  }
-  xpriv() {
-    return this.root.toBase58();
-  }
-  xpub() {
-    return this.root.neutered().toBase58();
-  }
-  generateLegacyAddress(index) {
-    if (typeof index === "undefined") {
-      index = 0;
-    }
-    const path = "m/0/" + index; // bip32
-    const child = this.root.derivePath(path);
-    return bitcoin.payments.p2pkh({
-      pubkey: child.publicKey,
-      network: this.network,
-    }).address;
-  }
-  generateAddress(index) {
-    if (typeof index === "undefined") {
-      index = 0;
-    }
-    let coinType = 0;
-    if (this.network === bitcoin.networks.testnet) {
-      coinType = 1;
-    }
-    const path = "m/84'/" + coinType + "'/0'/0/" + index; // bip84 bech32
-    const child = this.root.derivePath(path);
-    return bitcoin.payments.p2wpkh({
-      pubkey: child.publicKey,
-      network: this.network,
-    }).address;
-  }
-  generateChangeAddress(index) {
-    if (typeof index === "undefined") {
-      index = 0;
-    }
-    let coinType = 0;
-    if (this.network === bitcoin.networks.testnet) {
-      coinType = 1;
-    }
-    const path = "m/84'/" + coinType + "'/0'/1/" + index; // bip84 bech32
-    const child = this.root.derivePath(path);
-    return bitcoin.payments.p2wpkh({
-      pubkey: child.publicKey,
-      network: this.network,
-    }).address;
-  }
-  async sync(provider) {
-    let i = 0;
-    while (i < this.lookahead) {
-      let data = await provider.getAddress(this.generateAddress(i));
-      let transactions = [];
-      if (data.chain_stats.tx_count > 0) {
-        transactions = await provider.getAddressTransactions(
-          this.generateAddress(i),
-        );
-      }
-      this.addresses.push(
-        new Address(
-          i,
-          this.generateAddress(i),
-          "m/84'/0'/0'/0/" + i,
-          transactions,
-        ),
-      );
-      // let data = await provider.getAddress(this.generateAddress(i))
-      // console.log(data);
-      i++;
-    }
-  }
-  async syncChange(provider) {
-    let i = 0;
-    while (i < this.lookahead) {
-      let data = await provider.getAddress(this.generateChangeAddress(i));
-      let transactions = [];
-      if (data.chain_stats.tx_count > 0) {
-        transactions = await provider.getAddressTransactions(
-          this.generateChangeAddress(i),
-        );
-      }
-      this.addresses.push(
-        new Address(
-          i,
-          this.generateChangeAddress(i),
-          "m/84'/0'/0'/1/" + i,
-          transactions,
-          "internal",
-        ),
-      );
-      // let data = await provider.getAddress(this.generateAddress(i))
-      // console.log(data);
-      i++;
-    }
-  }
-  async syncAll(provider) {
-    await this.sync(provider);
-    await this.syncChange(provider);
-    let addresses = this.addresses.map((address) => address.address);
-    let spendTxs = [];
-    // get outgoing transactions
-    this.addresses.forEach((address) => {
-      address.txs.forEach((tx) => {
-        let confirmedReceived = 0;
-        let confirmedSpent = 0;
-        for (let input of tx.vin) {
-          if (input.prevout.scriptpubkey_address === address.address) {
-            confirmedSpent += input.prevout.value;
-            spendTxs.push(tx.txid);
-          }
-        }
-        for (let output of tx.vout) {
-          if (
-            output.scriptpubkey_address === address.address ||
-            addresses.indexOf(output.scriptpubkey_address) !== -1
-          ) {
-            confirmedReceived += output.value;
-          }
-        }
-        if (confirmedSpent > 0) {
-          this.transactions.push(
-            new Transaction(
-              "outgoing",
-              tx.txid,
-              tx.fee,
-              confirmedSpent - confirmedReceived,
-              tx.status.confirmed,
-              address.address,
-              tx.status.block_time,
-            ),
-          );
-        }
-      });
-    });
-    // get incoming transactions
-    this.addresses.forEach((address) => {
-      address.txs.forEach((tx) => {
-        if (spendTxs.indexOf(tx.txid) === -1) {
-          let confirmedReceived = 0;
-          for (let output of tx.vout) {
-            if (
-              output.scriptpubkey_address === address.address ||
-              output.scriptpubkey_address ===
-                this.generateChangeAddress(address.index)
-            ) {
-              confirmedReceived += output.value;
-            }
-          }
-          this.transactions.push(
-            new Transaction(
-              "incoming",
-              tx.txid,
-              tx.fee,
-              confirmedReceived,
-              tx.status.confirmed,
-              address.address,
-              tx.status.block_time,
-            ),
-          );
-        }
-      });
-    });
-    this.transactions.sort((a, b) => {
-      if (a.timestamp < b.timestamp) {
-        return -1;
-      }
-      if (a.timestamp > b.timestamp) {
-        return 1;
-      }
-      return 0;
-    });
-  }
-}
-class Address {
-  constructor(index, address, derivationPath, txs, type) {
-    this.type = "external";
-    this.confirmedReceived = 0;
-    this.confirmedSpent = 0;
-    this.confirmedUnspent = 0;
-    this.index = index;
-    this.address = address;
-    this.derivationPath = derivationPath;
-    this.txs = txs;
-    if (typeof type !== "undefined") {
-      this.type = type;
-    }
-  }
-  getBalance() {
-    let confirmedReceived = 0;
-    let confirmedSpent = 0;
-    for (let tx of this.txs) {
-      for (let output of tx.vout) {
-        if (output.scriptpubkey_address === this.address) {
-          confirmedReceived += output.value;
-        }
-      }
-      for (let input of tx.vin) {
-        if (input.prevout.scriptpubkey_address === this.address) {
-          confirmedSpent += input.prevout.value;
-        }
-      }
-    }
-    this.confirmedReceived = confirmedReceived;
-    this.confirmedSpent = confirmedSpent;
-    this.confirmedUnspent = confirmedReceived - confirmedSpent;
-    let balance = confirmedReceived - confirmedSpent;
-    return balance;
-  }
-}
-class Transaction {
-  constructor(direction, txid, fee, amount, confirmed, address, timestamp) {
-    this.direction = direction;
-    this.txid = txid;
-    this.fee = fee;
-    this.amount = amount;
-    this.confirmed = confirmed;
-    this.address = address;
-    this.timestamp = timestamp;
-  }
-}
-(async () => {
-  const wallet = new Wallet(
-    "circle chalk surface fee finish fever turkey usage ask horse attitude trumpet",
+const regtest_1 = require("../providers/regtest");
+const bitcoin_1 = require("./bitcoin");
+async function testBitcoin() {
+  const regtest = new regtest_1.Regtest();
+  // console.log(await regtest.height());
+  const walletType = bitcoin_1.AddressType.p2wpkh;
+  const walletType2 = bitcoin_1.AddressType.p2wpkh;
+  const wallet = new bitcoin_1.Wallet(
+    "black armed enroll bicycle fall finish vague addict estate enact ladder visa tooth sample labor olive annual off vocal hurry half toy bachelor suit",
+    walletType,
   );
-  //const wallet = Wallet.generate();
+  const wallet2 = new bitcoin_1.Wallet(
+    "base federal window toy legal cherry minute wrestle junior tribe gym palace trumpet damage dragon network rude harbor drum attract excess cream wing inquiry",
+    walletType2,
+  );
+  //const wallet2 = Wallet.generate();
+  // console.log(regtestUtils.network);
+  // console.log(wallet2.mnemonic);
+  // const add = wallet.generateAddress();
+  // console.log(add.output?.toString('hex'));
+  //const unspent = await regtestUtils.faucet(address, 2e4)
+  const receiverAmounts = [5e7];
+  const faucetAmounts = [1e8]; // Creation of the inputs we want to use, these are sent to senders addresses
+  // let senders: Array<AddressNew> = generateAddresses(wallet, [0,1]);
+  // let receivers: Array<AddressNew> = generateAddresses(wallet2, [0,1,2,3,4]);
+  let senders = generateAddresses(wallet, [0]);
+  let receivers = generateAddresses(wallet2, [0]);
+  function generateAddresses(w, pathIndexes) {
+    let addresses = Array();
+    pathIndexes.forEach((i) => {
+      const address = w.generateAddress(i);
+      addresses.push(address);
+    });
+    return addresses;
+  }
+  let faucetTxs = Array();
+  for (let i = 0; i < senders.length; i++) {
+    faucetTxs.push(
+      (await regtest.faucet(senders[i].address ?? "", faucetAmounts[i])).txId,
+    );
+  }
+  // Mine 6 blocks, returns an Array of the block hashes
+  // All of the above faucet payments will confirm
+  await regtest.mineBlocks(6);
+  for (let i = 0; i < faucetTxs.length; i++) {
+    await wallet.syncTransaction(faucetTxs[i], regtest);
+  }
+  const txid = await wallet.send(5e7, receivers[0].address ?? "", regtest);
+  // const psbt = buildp2pkh(wallet.unspent, receiverAmounts, receivers, regtest.network())
+  // const tx = signp2pkh(psbt, senders.map(sender => sender.keyPair))
+  // console.log(tx)
+  // build and broadcast to the Bitcoin Local RegTest server
+  // await regtest.broadcast(tx.toHex())
+  console.log("transaction broadcasted");
+  const fetched2Tx = await regtest.getTransaction(txid);
+  console.log(fetched2Tx);
+  // This verifies that the vout output of txId transaction is actually for value
+  // in satoshis and is locked for the address given.
+  // The utxo can be unconfirmed. We are just verifying it was at least placed in
+  // the mempool.
+  await regtest.verify({
+    txId: txid,
+    address: receivers[0].address,
+    vout: 0,
+    value: receiverAmounts[0],
+  });
   // console.log(wallet.mnemonic);
   // console.log(wallet.seed);
   // console.log(wallet.xpriv());
   // console.log(wallet.xpub());
   // console.log(wallet.legacyAddress);
-  console.log(wallet.generateAddress());
+  // console.log(wallet.generateAddress());
   // console.log(wallet.generateAddress(5));
-  const provider = new providers_1.Blockstream(
-    "https://blockstream.info/testnet/api",
-  );
-  console.log(provider.url);
+  // const provider = new Blockstream('https://blockstream.info/testnet/api');
+  // console.log(provider.url)
   // const transactions = await provider.getAddressTransactions(wallet.generateAddress(1))
   // console.log(transactions);
   // await wallet.sync(provider);
   // await wallet.syncChange(provider);
-  wallet.addresses.forEach((address) => {
-    console.log(address.address, address.getBalance());
-  });
-  await wallet.syncAll(provider);
-  console.table(wallet.transactions);
+  // await wallet.syncAll(provider);
+  // console.table(wallet.transactions);
+  // wallet.addresses.forEach(address => {
+  //     console.log(address.address, address.getBalance());
+  // })
   // let address = new Address(wallet.generateAddress(1), "m/84'/0'/0'/0/1", transactions);
   // console.log(address.getBalance());
   // console.log(address.confirmedReceived, address.confirmedSpent, address.confirmedUnspent)
+}
+(async () => {
+  testBitcoin();
 })();
