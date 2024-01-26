@@ -3,6 +3,7 @@ const bitcoin = require('bitcoinjs-lib')
 import { RegtestUtils } from 'regtest-client';
 import { TransactionInterface } from ".";
 import { BlockResult } from ".";
+const fetch = require('node-fetch');
 const regtestUtils = new RegtestUtils(bitcoin)
 
 export interface Unspent {
@@ -14,7 +15,7 @@ export interface Unspent {
 }
 
 export class Regtest{
-    url: string = 'https://blockstream.info/api';
+    url: string = 'http://127.0.0.1:8080/1';
 
     constructor(url?: string) {
         if (url !== undefined) {
@@ -51,5 +52,20 @@ export class Regtest{
 
     getTransaction(txId: string): Promise<TransactionInterface> {
         return regtestUtils.fetch(txId)
+    }
+
+    async getTransactions(address: string): Promise<void> {
+        const response = await fetch(this.url + '/a/'+address+'/txs', {
+            method: 'GET',
+          });
+          console.log( await response.json())
+        //   return response.json();
+    }
+    
+    async height(): Promise<number> {
+        const response = await fetch(this.url + '/b/best/height', {
+          method: 'GET',
+        });
+        return response.json() as Promise<number>;
     }
 }
