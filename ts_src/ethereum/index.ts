@@ -1,6 +1,7 @@
+// Ethers lets you import just the classes you need. 
+// We import the various pieces of ethers.js that we require.
+// This is done so we don't need to qualify them by prefixing ethers, eg ethers.Transaction
 import { AlchemyProvider, Block, FeeData, FixedNumber, HDNodeWallet, Log, ethers, Transaction, TransactionResponse, Filter, Wallet } from 'ethers';
-
-require('dotenv').config();
 
 class EthClient {
     // Properties

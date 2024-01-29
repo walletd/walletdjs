@@ -1,6 +1,11 @@
 import EthClient from "../index";
 
+// We use a .env file that isn't stored in version control in order to store our mnemonic phrase
+// dotenv is a library that allows us to access environment variables from a .env file
+require('dotenv').config();
+
 async function doStuff() {
+    // Todo: Replace API key with a .env variable
     let ethClient = new EthClient("VqDjBvWuSn2RjrjMERoTIRw0VKlkGRRT");
     
     let envPhrase = process.env.MNEMONIC;
