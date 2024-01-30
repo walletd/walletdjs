@@ -13,8 +13,8 @@ import { HDWallet } from '../../wallets';
     
     const walletType = AddressType.p2wpkh;
     const walletType2 = AddressType.p2wpkh;
-    const wallet = rootWallet.bitcoinWallet(walletType);
-    const wallet2 = rootWallet2.bitcoinWallet(walletType2);
+    const wallet = rootWallet.testnetWallet(walletType);
+    const wallet2 = rootWallet2.testnetWallet(walletType2);
     //const wallet2 = Wallet.generate();
     // console.log(regtestUtils.network);
     // console.log(wallet2.mnemonic);

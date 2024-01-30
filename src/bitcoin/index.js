@@ -109,6 +109,9 @@ class BitcoinWallet {
     const child = this.root.derivePath(path);
     return new AddressNew(index, child, this.addressType, this.network);
   }
+  address(_index) {
+    return this.generateAddress(_index).address;
+  }
   generateChangeAddress(index) {
     if (typeof index === "undefined") {
       index = 0;

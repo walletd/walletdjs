@@ -9,16 +9,16 @@ const wallets_1 = require("../../wallets");
 (async () => {
   const regtest = new regtest_1.Regtest();
   // console.log(await regtest.height());
-  const rootWallet = new wallets_1.Wallet(
+  const rootWallet = new wallets_1.HDWallet(
     "black armed enroll bicycle fall finish vague addict estate enact ladder visa tooth sample labor olive annual off vocal hurry half toy bachelor suit",
   );
-  const rootWallet2 = new wallets_1.Wallet(
+  const rootWallet2 = new wallets_1.HDWallet(
     "base federal window toy legal cherry minute wrestle junior tribe gym palace trumpet damage dragon network rude harbor drum attract excess cream wing inquiry",
   );
   const walletType = bitcoin_1.AddressType.p2wpkh;
   const walletType2 = bitcoin_1.AddressType.p2wpkh;
-  const wallet = rootWallet.bitcoinWallet(walletType);
-  const wallet2 = rootWallet2.bitcoinWallet(walletType2);
+  const wallet = rootWallet.testnetWallet(walletType);
+  const wallet2 = rootWallet2.testnetWallet(walletType2);
   //const wallet2 = Wallet.generate();
   // console.log(regtestUtils.network);
   // console.log(wallet2.mnemonic);
