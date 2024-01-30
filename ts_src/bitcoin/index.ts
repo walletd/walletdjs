@@ -20,7 +20,7 @@ export interface InputInterface {
     value: number;
 }
 
-export class BitcoinWallet implements BaseWallet{
+export class BitcoinWallet implements BaseWallet {
     legacyAddress: string;
     primaryAddress: string;
     root: BIP32Interface;
