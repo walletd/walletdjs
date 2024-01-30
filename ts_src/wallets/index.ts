@@ -5,7 +5,7 @@ import BIP32Factory, { BIP32Interface } from 'bip32';
 
 const bip32 = BIP32Factory(ecc);
 
-export class Wallet {
+export class HDWallet {
     mnemonic: string;
     seed: Buffer;
     root: BIP32Interface;
@@ -16,8 +16,8 @@ export class Wallet {
         this.root = bip32.fromSeed(this.seed);
     }
 
-    static generate() : Wallet {
-        return new Wallet(bip39.generateMnemonic(256));
+    static generate() : HDWallet {
+        return new HDWallet(bip39.generateMnemonic(256));
     }
 
     xpriv() : string {

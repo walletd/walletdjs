@@ -1,6 +1,6 @@
 import { Regtest } from '../../bitcoin/providers/regtest';
 import { AddressType, BitcoinWallet, AddressNew } from '../../bitcoin';
-import { Wallet } from '../../wallets';
+import { HDWallet } from '../../wallets';
 
 /* This example requires a local Bitcoin RegTest server running on port 8080
  the regtest docker imagee can be found at https://github.com/bitcoinjs/regtest-server
@@ -8,8 +8,8 @@ import { Wallet } from '../../wallets';
 (async () => {
     const regtest = new Regtest();
     // console.log(await regtest.height());
-    const rootWallet = new Wallet("black armed enroll bicycle fall finish vague addict estate enact ladder visa tooth sample labor olive annual off vocal hurry half toy bachelor suit");
-    const rootWallet2 = new Wallet("base federal window toy legal cherry minute wrestle junior tribe gym palace trumpet damage dragon network rude harbor drum attract excess cream wing inquiry");
+    const rootWallet = new HDWallet("black armed enroll bicycle fall finish vague addict estate enact ladder visa tooth sample labor olive annual off vocal hurry half toy bachelor suit");
+    const rootWallet2 = new HDWallet("base federal window toy legal cherry minute wrestle junior tribe gym palace trumpet damage dragon network rude harbor drum attract excess cream wing inquiry");
     
     const walletType = AddressType.p2wpkh;
     const walletType2 = AddressType.p2wpkh;
