@@ -3,14 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.signp2pkh =
   exports.buildp2pkh =
   exports.AddressNew =
-  exports.Wallet =
+  exports.BitcoinWallet =
   exports.AddressType =
     void 0;
-const ecc = require("tiny-secp256k1");
 const bitcoin = require("bitcoinjs-lib");
-const bip39 = require("bip39");
-const bip32_1 = require("bip32");
-const bip32 = (0, bip32_1.default)(ecc);
 var AddressType;
 (function (AddressType) {
   AddressType["p2pkh"] = "p2pkh";
@@ -19,8 +15,8 @@ var AddressType;
   AddressType["p2wsh"] = "p2wsh";
   AddressType["p2tr"] = "p2tr";
 })(AddressType || (exports.AddressType = AddressType = {}));
-class Wallet {
-  constructor(mnemonic, type) {
+class BitcoinWallet {
+  constructor(root, type) {
     this.network = bitcoin.networks.regtest;
     this.lookahead = 20;
     this.addresses = [];
@@ -28,9 +24,7 @@ class Wallet {
     this.addressType = AddressType.p2wpkh;
     this.addressNew = [];
     this.unspent = [];
-    this.mnemonic = mnemonic;
-    this.seed = bip39.mnemonicToSeedSync(mnemonic);
-    this.root = bip32.fromSeed(this.seed);
+    this.root = root;
     this.legacyAddress = this.generateLegacyAddress();
     this.primaryAddress = this.generateAddress()?.address;
     if (typeof type !== "undefined") {
@@ -89,9 +83,6 @@ class Wallet {
     // build and broadcast to the Bitcoin Local RegTest server
     await provider.broadcast(tx.toHex());
     return tx.getId();
-  }
-  static generate() {
-    return new Wallet(bip39.generateMnemonic(256));
   }
   xpriv() {
     return this.root.toBase58();
@@ -260,7 +251,7 @@ class Wallet {
     });
   }
 }
-exports.Wallet = Wallet;
+exports.BitcoinWallet = BitcoinWallet;
 class AddressNew {
   constructor(index, keyPair, type, network) {
     this.type = AddressType.p2wpkh;

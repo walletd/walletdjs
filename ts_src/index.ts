@@ -1,4 +1,4 @@
-import { Providers } from './providers';
+import { Providers } from './bitcoin/providers';
 export const coins = ['btc', 'eth', 'xmr'];
 
 export { Providers };

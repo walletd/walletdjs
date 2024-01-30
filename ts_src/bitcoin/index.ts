@@ -1,10 +1,6 @@
-import * as ecc from 'tiny-secp256k1';
 import * as bitcoin from 'bitcoinjs-lib';
-import * as bip39 from 'bip39';
-import BIP32Factory, { BIP32Interface } from 'bip32';
-import { Blockstream, Provider, TransactionResult } from '../providers';
-
-const bip32 = BIP32Factory(ecc);
+import { BIP32Interface } from 'bip32';
+import { Blockstream, Provider, TransactionResult } from './providers';
 
 export enum AddressType {
     "p2pkh" = "p2pkh",
@@ -23,11 +19,9 @@ export interface InputInterface {
     value: number;
 }
 
-export class Wallet {
+export class BitcoinWallet {
     legacyAddress: string;
     primaryAddress: string;
-    mnemonic: string;
-    seed: Buffer;
     root: BIP32Interface;
     network: bitcoin.Network = bitcoin.networks.regtest;
     lookahead: number = 20;
@@ -37,10 +31,8 @@ export class Wallet {
     addressNew: Array<AddressNew> = [];
     unspent: Array<InputInterface> = [];
 
-    constructor(mnemonic: string, type?: AddressType) {
-        this.mnemonic = mnemonic;
-        this.seed = bip39.mnemonicToSeedSync(mnemonic);
-        this.root = bip32.fromSeed(this.seed);
+    constructor(root: BIP32Interface, type?: AddressType) {
+        this.root = root;
         this.legacyAddress =  this.generateLegacyAddress();
         this.primaryAddress = this.generateAddress()?.address!;
         if (typeof type !== 'undefined') {
@@ -99,10 +91,6 @@ export class Wallet {
         // build and broadcast to the Bitcoin Local RegTest server
         await provider.broadcast(tx.toHex())
         return tx.getId(); 
-    }
-
-    static generate() : Wallet {
-        return new Wallet(bip39.generateMnemonic(256));
     }
 
     xpriv() : string {
