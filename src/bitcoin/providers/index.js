@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Providers = exports.Blockchaincom = exports.Blockstream = void 0;
+exports.Providers = exports.Blockstream = void 0;
 const blockstream_1 = require("./blockstream");
 Object.defineProperty(exports, "Blockstream", {
   enumerable: true,
@@ -8,17 +8,10 @@ Object.defineProperty(exports, "Blockstream", {
     return blockstream_1.Blockstream;
   },
 });
-const blockchaincom_1 = require("./blockchaincom");
-Object.defineProperty(exports, "Blockchaincom", {
-  enumerable: true,
-  get: function () {
-    return blockchaincom_1.Blockchaincom;
-  },
-});
 var Providers;
 (function (Providers) {
   Providers[(Providers["Blockstream"] = 0)] = "Blockstream";
-  Providers[(Providers["Blockchaincom"] = 1)] = "Blockchaincom";
+  Providers[(Providers["RegTest"] = 1)] = "RegTest";
 })(Providers || (exports.Providers = Providers = {}));
 (async () => {
   // let provider = new Blockstream('https://blockstream.info/testnet/api');
@@ -34,7 +27,7 @@ var Providers;
   // console.log(block2);
   // let address = await provider.getAddress('tb1q47u7f8ct64l6ew0jpdk6uvvtqa7y6fwnwarkpr');
   // console.log(address);
-  // let tx = await provider.getTransaction('b21ba999c89477af16b2ae0cf2eca428d50a62ba82d97628428dd4b5d567e6f1')
+  // let tx = await provider.getTransaction('67a8b0c0e5810bdfe1981e238dee0564ab4322d53169174c0f514f570c7442d8')
   // console.log(tx);
   // not yet tested
   // let provider = new Blockchaincom();

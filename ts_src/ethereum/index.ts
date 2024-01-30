@@ -129,7 +129,7 @@ class EthClient {
 
     // TO-DO: Finish - Official JSON-RPC commands supported by Ethereum nodes
     // Creates new message call transaction or a contract creation for signed transactions.
-    async sendTransaction(tx: Transaction) {
+    async sendTransaction(_tx: Transaction) {
         // We may need to sign the transaction before sending it
         
     }

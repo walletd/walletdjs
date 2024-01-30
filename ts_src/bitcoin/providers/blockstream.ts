@@ -1,4 +1,4 @@
-import { BlockResult, Provider } from ".";
+import { BlockResult, Provider, TransactionInterface } from ".";
 
 type BlockstreamBlockResult = {
   id: String,
@@ -30,7 +30,7 @@ type StatsResult = {
     tx_count: number,
 }
 
-type TransactionResult = {
+export type TransactionResult = {
     txid: string,
     version: number,
     locktime: number,
@@ -76,7 +76,7 @@ export class Blockstream implements Provider{
             this.url = url;
         }
     }
-    
+
     getTipHash(): Promise<string> {
         return fetch(this.url + '/blocks/tip/hash')
         .then(response => response.text())
@@ -145,8 +145,40 @@ export class Blockstream implements Provider{
         return request<AddressResult>(this.url + '/address/' + address)
     }
 
-    getTransaction(txid: string): Promise<TransactionResult> {
+    getAddressTransactions(address: string): Promise<Array<TransactionResult>> {
+        return request<Array<TransactionResult>>(this.url + '/address/' + address + '/txs')
+    }
+
+    getTransaction(txid: string): Promise<TransactionInterface> {
         return request<TransactionResult>(this.url + '/tx/' + txid)
+        .then((data) => {
+            return {
+                txId: data.txid,
+                txHex: '',
+                vsize: data.size,
+                version: data.version,
+                locktime: data.locktime,
+                ins: data.vin.map((vin) => {
+                    return {
+                        txId: vin.txid,
+                        vout: vin.vout,
+                        script: vin.scriptsig,
+                        sequence: ""+vin.sequence
+                    }
+                }),
+                outs: data.vout.map((vout) => {
+                    return {
+                        value: vout.value,
+                        script: vout.scriptpubkey,
+                        address: vout.scriptpubkey_address
+                    }
+                })
+            } as TransactionInterface;
+        })
+    }
+
+    broadcast(txHex: string): Promise<null> {
+        throw new Error("Method not implemented."+txHex);
     }
 }
 // https://www.newline.co/@bespoyasov/how-to-use-fetch-with-typescript--a81ac257

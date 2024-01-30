@@ -1,15 +1,39 @@
-import {Blockstream} from './blockstream';
-import { Blockchaincom } from './blockchaincom';
+import {Blockstream, TransactionResult} from './blockstream';
 
-export { Blockstream, Blockchaincom };
+export { Blockstream, TransactionResult };
 
 export enum Providers {
     Blockstream,
-    Blockchaincom
+    RegTest
 }
 export interface Provider {
     getBlockByHash: (hash: string) => Promise<BlockResult>;
     getBlockNumber: () => Promise<number>;
+    getTransaction: (hash: string) => Promise<TransactionInterface>;
+    broadcast: (txHex: string) => Promise<null>;
+}
+
+export interface Input {
+    txId: string;
+    vout: number;
+    script: string;
+    sequence: string;
+}
+
+export interface Output {
+    value: number;
+    script: string;
+    address?: string;
+}
+
+export interface TransactionInterface {
+    txId: string;
+    txHex: string;
+    vsize: number;
+    version: number;
+    locktime: number;
+    ins: Input[];
+    outs: Output[];
 }
 
 export type BlockResult = {
@@ -44,7 +68,7 @@ export type BlockResult = {
 // console.log(block2);
 // let address = await provider.getAddress('tb1q47u7f8ct64l6ew0jpdk6uvvtqa7y6fwnwarkpr');
 // console.log(address);
-// let tx = await provider.getTransaction('b21ba999c89477af16b2ae0cf2eca428d50a62ba82d97628428dd4b5d567e6f1')
+// let tx = await provider.getTransaction('67a8b0c0e5810bdfe1981e238dee0564ab4322d53169174c0f514f570c7442d8')
 // console.log(tx);
 // not yet tested
 // let provider = new Blockchaincom();

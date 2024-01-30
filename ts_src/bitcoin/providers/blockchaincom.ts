@@ -1,6 +1,6 @@
-import { BlockResult, Provider } from ".";
+import { BlockResult } from ".";
 
-export class Blockchaincom implements Provider {
+export class Blockchaincom {
     getBlockByHash(hash: string): Promise<BlockResult> {
         return request<BlockResult>('https://blockchain.info/rawblock/' + hash)
     }
