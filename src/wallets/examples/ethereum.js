@@ -7,6 +7,6 @@ const __1 = require("../");
     "black armed enroll bicycle fall finish vague addict estate enact ladder visa tooth sample labor olive annual off vocal hurry half toy bachelor suit",
   );
   let ethWallet = hdWallet.createWallet(__1.CoinTypes.ethereum);
-  let address = ethWallet.address();
-  console.log(address);
+  let btcWallet = hdWallet.createWallet(__1.CoinTypes.testnet);
+  console.log(ethWallet.address(), btcWallet.address());
 })();

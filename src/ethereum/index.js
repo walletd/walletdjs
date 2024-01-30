@@ -1,4 +1,6 @@
 "use strict";
+// TODO: Discuss pros/cons of moving providers into in eth-client instead.
+// We can do this when we polish up. This is more a to-do that can come when we polish
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EthClient =
   exports.InfuraProvider =
