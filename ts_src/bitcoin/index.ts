@@ -1,6 +1,7 @@
 import * as bitcoin from 'bitcoinjs-lib';
 import { BIP32Interface } from 'bip32';
 import { Blockstream, Provider, TransactionResult } from './providers';
+import { BaseWallet } from '../wallets';
 
 export enum AddressType {
     "p2pkh" = "p2pkh",
@@ -19,7 +20,7 @@ export interface InputInterface {
     value: number;
 }
 
-export class BitcoinWallet {
+export class BitcoinWallet implements BaseWallet{
     legacyAddress: string;
     primaryAddress: string;
     root: BIP32Interface;
@@ -117,6 +118,10 @@ export class BitcoinWallet {
         const path = "0/" + index; // bip32
         const child = this.root.derivePath(path);
         return new AddressNew(index, child, this.addressType, this.network)
+    }
+
+    address(_index: number): string {
+        return this.generateAddress(_index).address!;
     }
 
     generateChangeAddress(index? : number) : string {
