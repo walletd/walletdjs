@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Providers = exports.coins = void 0;
-
 const providers_1 = require("./bitcoin/providers");
 Object.defineProperty(exports, "Providers", {
   enumerable: true,
