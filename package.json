@@ -34,7 +34,14 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@chainify/bitcoin": "^2.3.0",
+    "@chainify/client": "^2.2.1",
+    "@chainify/evm": "^3.0.0",
+    "@chainify/types": "^2.3.0",
+    "@ethersproject/providers": "^5.7.2",
+    "@liquality/cryptoassets": "^2.12.0",
     "@types/sjcl": "^1.0.34",
+    "bignumber.js": "^9.1.2",
     "bip32": "^4.0.0",
     "bip39": "^3.1.0",
     "bitcoinjs-lib": "^6.1.5",
