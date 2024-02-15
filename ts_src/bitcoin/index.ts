@@ -2,6 +2,9 @@ import * as bitcoin from 'bitcoinjs-lib';
 import { BIP32Interface } from 'bip32';
 import { Blockstream, Provider, TransactionResult } from './providers';
 import { BaseWallet } from '../wallets';
+import { BitcoinEsploraApiProvider } from './chain/esplora/BitcoinEsploraApiProvider';
+
+export { BitcoinEsploraApiProvider }
 
 export enum AddressType {
     "p2pkh" = "p2pkh",
