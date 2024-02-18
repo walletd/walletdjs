@@ -1,10 +1,9 @@
 import { BitcoinHDWalletProviderOptions } from '@chainify/bitcoin/dist/lib/types';
 import { BitcoinEsploraBaseProvider, BitcoinHDWalletProvider } from '@chainify/bitcoin'
-import { Address } from '@chainify/types';
 import * as EsploraTypes from '@chainify/bitcoin/dist/lib/chain/esplora/types';
 import { asyncWrite, asyncRead, exists, UTXO } from './';
 import { Transaction as EsploraTransaction } from '@chainify/bitcoin/dist/lib/chain/esplora/types';
-import { Transaction } from '@chainify/types';
+import { Address, Transaction } from '@chainify/types';
 import { BitcoinEsploraApiProvider } from '../bitcoin';
 
 async function sleep(ms: number) { 

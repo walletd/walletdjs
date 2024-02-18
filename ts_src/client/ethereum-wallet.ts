@@ -1,5 +1,5 @@
 import { TransactionRequest as EthersTxRequest } from '@ethersproject/providers';
-import { EvmChainProvider, EvmWalletProvider } from '@chainify/evm'
+import { EvmChainProvider, EvmWalletProvider } from './'
 import { AssetTypes, BigNumber, ChainId, TransactionRequest, WalletOptions } from '@chainify/types'
 
 const ethAsset = {
