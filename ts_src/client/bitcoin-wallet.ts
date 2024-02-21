@@ -1,10 +1,12 @@
 import { BitcoinHDWalletProviderOptions } from '@chainify/bitcoin/dist/lib/types';
 import { BitcoinEsploraBaseProvider, BitcoinHDWalletProvider } from '@chainify/bitcoin'
 import * as EsploraTypes from '@chainify/bitcoin/dist/lib/chain/esplora/types';
-import { asyncWrite, asyncRead, exists, UTXO } from './';
+import { FileStorage, UTXO } from './';
 import { Transaction as EsploraTransaction } from '@chainify/bitcoin/dist/lib/chain/esplora/types';
 import { Address, Transaction } from '@chainify/types';
 import { BitcoinEsploraApiProvider } from '../bitcoin';
+
+const store = new FileStorage()
 
 async function sleep(ms: number) { 
     new Promise(resolve => setTimeout(resolve, ms))
@@ -49,21 +51,21 @@ export class BitcoinWallet {
     }
 
     async _usedAddresses (): Promise<Address[]> {
-        if (exists("addresses.json")) {
+        if (store.exists("addresses.json")) {
             // console.log("addresses file exists")
-            this.usedAddresses = await asyncRead<Address[]>("addresses.json")
+            this.usedAddresses = await store.asyncRead<Address[]>("addresses.json")
         } else {
             // console.log("addresses file does not exist")
             this.usedAddresses = await this.getUsedAddresses()
-            asyncWrite<Address[]>('addresses.json', this.usedAddresses);
+            store.asyncWrite<Address[]>('addresses.json', this.usedAddresses);
         }
         return this.usedAddresses
     }
 
     async _utxos (): Promise<UTXO[]> {
-        if (exists("utxos.json")) {
+        if (store.exists("utxos.json")) {
             // console.log("utxo file exists")
-            this.utxos = await asyncRead<UTXO[]>("utxos.json")
+            this.utxos = await store.asyncRead<UTXO[]>("utxos.json")
         } else {
             // console.log("utxo file does not exist")
             for (let i = 0; i < this.usedAddresses.length; i++) {
@@ -72,7 +74,7 @@ export class BitcoinWallet {
                 await sleep(5000)
             }
             // usedAddresses = await bitcoin.getUsedAddresses()
-            asyncWrite<UTXO[]>('utxos.json', this.utxos);
+            store.asyncWrite<UTXO[]>('utxos.json', this.utxos);
         }
 
         this.utxos.sort((a: UTXO, b: UTXO): number => {
@@ -119,11 +121,11 @@ export class BitcoinWallet {
      */
     async _rawTransactions (): Promise<UTXO[]> {
         let rawTransactions = Array()
-        if (exists("transactions.json")) {
-            rawTransactions = await asyncRead<UTXO[]>("transactions.json")
+        if (store.exists("transactions.json")) {
+            rawTransactions = await store.asyncRead<UTXO[]>("transactions.json")
         } else {
             rawTransactions = await this.getTransactionList(this.utxos.map(t => t.txid))
-            asyncWrite<UTXO[]>('transactions.json', rawTransactions);
+            store.asyncWrite<UTXO[]>('transactions.json', rawTransactions);
         }
 
         return rawTransactions
@@ -133,15 +135,15 @@ export class BitcoinWallet {
         const EsploraProvider = new BitcoinEsploraBaseProvider(BlockstreamEsploraTestnet)
 
         let normalizedTransactions = Array()
-        if (exists("normalized-transactions.json")) {
-            normalizedTransactions = await asyncRead<Transaction[]>("normalized-transactions.json")
+        if (store.exists("normalized-transactions.json")) {
+            normalizedTransactions = await store.asyncRead<Transaction[]>("normalized-transactions.json")
         } else {
             for (let i = 0; i < this.utxos.length; i++) {
                 const decodedTx = await EsploraProvider.formatTransaction(this.utxos[i] as unknown as EsploraTransaction, height)
                 normalizedTransactions = normalizedTransactions.concat(decodedTx)
                 await sleep(5000)
             }
-            asyncWrite<Transaction[]>('normalized-transactions.json', normalizedTransactions);
+            store.asyncWrite<Transaction[]>('normalized-transactions.json', normalizedTransactions);
         }
 
         return normalizedTransactions

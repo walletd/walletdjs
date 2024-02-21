@@ -1,5 +1,6 @@
+import { WalletDStorage } from ".";
 
-export class MemoryStorage {
+export class MemoryStorage implements WalletDStorage{
     store: any;
 /**
  * Writes the data to the file and returns the contents

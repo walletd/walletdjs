@@ -1,4 +1,8 @@
-import { EthereumWallet, BitcoinWallet, BitcoinEsploraApiProvider, EvmChainProvider, EvmNetworks, BitcoinNetworks, WalletOptions, UTXO } from '../';
+import { EthereumWallet, BitcoinWallet, BitcoinEsploraApiProvider, EvmChainProvider, EvmNetworks, BitcoinNetworks, WalletOptions, UTXO, BitcoinNetworkProviders } from '../';
+
+// use this wallet options in the wallet manager.
+// create wallet with default options.
+// allow options to be customized as per below.
 
 const walletOptions: WalletOptions = {
     btc: {
@@ -8,13 +12,9 @@ const walletOptions: WalletOptions = {
     },
     eth: {
         mnemonic: 'black armed enroll bicycle fall finish vague addict estate enact ladder visa tooth sample labor olive annual off vocal hurry half toy bachelor suit',
-        derivationPath: "m/44'/60'/0'/0/0"
+        derivationPath: "m/44'/60'/0'/0/0",
+        network: EvmNetworks.ganache
     }
-}
-
-const BlockstreamEsploraTestnet = {
-    url: 'https://blockstream.info/testnet/api/', 
-    network: BitcoinNetworks.bitcoin_testnet
 }
 
 // const BlockstreamEsploraTestnet2 = {
@@ -24,7 +24,7 @@ const BlockstreamEsploraTestnet = {
 // }
 
 async function test () {
-    const provider = new BitcoinEsploraApiProvider(BlockstreamEsploraTestnet)
+    const provider = new BitcoinEsploraApiProvider(BitcoinNetworkProviders.blockstream_testnet)
 
     const bitcoin = new BitcoinWallet(walletOptions.btc, provider)
     const address = await bitcoin.getAddresses(0,1)
@@ -51,7 +51,7 @@ async function test () {
 
 
     // Ethereum
-    const ethProvider = new EvmChainProvider(EvmNetworks.ganache)
+    const ethProvider = new EvmChainProvider(walletOptions.eth.network)
     console.log(await ethProvider.getBlockHeight())
 
     // const txs = [

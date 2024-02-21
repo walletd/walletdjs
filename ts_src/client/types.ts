@@ -1,4 +1,5 @@
 import { BitcoinNetwork } from "@chainify/bitcoin/dist/lib/types"
+import { Network } from '@chainify/types';
 
 export interface WalletOptions {
     btc: {
@@ -8,7 +9,8 @@ export interface WalletOptions {
     },
     eth: {
         mnemonic: string,
-        derivationPath: string
+        derivationPath: string,
+        network: Network
     }
 }
 
