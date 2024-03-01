@@ -1,4 +1,4 @@
 export enum Providers {
-    Alchemy,
-    Infura
+  Alchemy,
+  Infura,
 }
