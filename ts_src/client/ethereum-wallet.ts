@@ -1,24 +1,26 @@
-import { TransactionRequest as EthersTxRequest } from "@ethersproject/providers";
-import { EvmChainProvider, EvmWalletProvider } from "./";
+import { TransactionRequest as EthersTxRequest } from '@ethersproject/providers';
+import { EvmChainProvider, EvmWalletProvider } from './';
 import {
-    Address,
+  Address,
   AssetTypes,
   BigNumber,
   ChainId,
+  Transaction,
   TransactionRequest,
   WalletOptions,
-} from "@chainify/types";
-import { BaseWallet } from "../wallets";
+} from '@chainify/types';
+import { BaseWallet } from '../wallets';
+import { EthersTransactionResponse } from '@chainify/evm/dist/lib/types';
 
 const ethAsset = {
-  name: "Ethereum",
-  code: "ETH",
+  name: 'Ethereum',
+  code: 'ETH',
   chain: ChainId.Ethereum,
   type: AssetTypes.native,
   decimals: 18,
 };
 
-export class EthereumWallet implements BaseWallet{
+export class EthereumWallet implements BaseWallet {
   constructor(options: WalletOptions, ethProvider: EvmChainProvider) {
     this.wallet = new EvmWalletProvider(options, ethProvider);
     this.provider = ethProvider;
@@ -26,26 +28,35 @@ export class EthereumWallet implements BaseWallet{
   wallet: EvmWalletProvider;
   provider: EvmChainProvider;
 
-  getAddress() : Promise<Address> {
+  getAddress(): Promise<Address> {
     return this.wallet.getAddress();
   }
-  getAddresses() : Promise<Address[]> {
-    return this.wallet.getAddress().then((address) => {
-        return new Promise((resolve) => {
-                resolve([address]);
-        })
-    })
+  getAddresses(): Promise<Address[]> {
+    return this.wallet.getAddress().then(address => {
+      return new Promise(resolve => {
+        resolve([address]);
+      });
+    });
   }
-  async getBalance() {
-    return await this.wallet.getBalance([ethAsset]);
+
+  getBalance(): Promise<BigNumber> {
+    return this.wallet.getBalance([ethAsset]).then(balance => {
+      return new Promise(resolve => {
+        resolve(balance[0]);
+      });
+    });
   }
-  async sendTransaction(to: string, value: number) {
+
+  sendTransaction(
+    to: string,
+    value: BigNumber,
+  ): Promise<Transaction<EthersTransactionResponse>> {
     const transaction: TransactionRequest = {
       asset: ethAsset,
       to: to,
-      value: BigNumber(value),
+      value: value,
     };
-    return await this.wallet.sendTransaction(transaction);
+    return this.wallet.sendTransaction(transaction);
   }
   async estimateGas(to: string, value: number) {
     const tx: EthersTxRequest = {

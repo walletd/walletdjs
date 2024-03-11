@@ -1,7 +1,7 @@
-import * as ecc from "tiny-secp256k1";
-import * as bip39 from "bip39";
-import BIP32Factory, { BIP32Interface } from "bip32";
-import { BaseWallet } from ".";
+import * as ecc from 'tiny-secp256k1';
+import * as bip39 from 'bip39';
+import BIP32Factory, { BIP32Interface } from 'bip32';
+import { BaseWallet } from '.';
 import {
   BitcoinEsploraApiProvider,
   BitcoinNetworkProviders,
@@ -10,13 +10,14 @@ import {
   EthereumWallet,
   EvmChainProvider,
   EvmNetworks,
-} from "../client";
+} from '../client';
 
 const bip32 = BIP32Factory(ecc);
 
 export enum CoinTypes {
   bitcoin = 0,
   testnet = 1,
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   regtest = 1,
   ethereum = 60,
 }
@@ -45,11 +46,10 @@ export class HDWallet {
   }
 
   createWallet(type: CoinTypes): BaseWallet {
-    let config = this.createConfig(type);
+    const config = this.createConfig(type);
     if (type === CoinTypes.ethereum) {
-        
-        const ethProvider = new EvmChainProvider(config.network);
-        return new EthereumWallet(config, ethProvider);
+      const ethProvider = new EvmChainProvider(config.network);
+      return new EthereumWallet(config, ethProvider);
     }
     // covers regtest as well
     if (type === CoinTypes.testnet) {
@@ -58,7 +58,7 @@ export class HDWallet {
       return new BitcoinWallet(config, provider);
     }
 
-    throw new Error("Unsupported coin type");
+    throw new Error('Unsupported coin type');
   }
 
   createConfig(type: CoinTypes): any {
@@ -86,6 +86,6 @@ export class HDWallet {
       };
     }
 
-    throw new Error("Unsupported coin type");
+    throw new Error('Unsupported coin type');
   }
 }

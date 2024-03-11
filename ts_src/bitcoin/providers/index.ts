@@ -1,4 +1,4 @@
-import { Blockstream, TransactionResult } from "./blockstream";
+import { Blockstream, TransactionResult } from './blockstream';
 
 export { Blockstream, TransactionResult };
 

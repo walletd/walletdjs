@@ -46,9 +46,11 @@
     "bip32": "^4.0.0",
     "bip39": "^3.1.0",
     "bitcoinjs-lib": "^6.1.5",
+    "crypto-js": "^4.2.0",
     "dotenv": "^16.3.1",
     "ethers": "^6.9.2",
     "node-fetch": "^2.7",
+    "pbkdf2": "^3.1.2",
     "rimraf": "^5.0.5",
     "sjcl": "^1.0.8",
     "tiny-secp256k1": "^2.2.3"

@@ -1,20 +1,35 @@
-import { BitcoinHDWalletProviderOptions } from "@chainify/bitcoin/dist/lib/types";
+import { BitcoinHDWalletProviderOptions } from '@chainify/bitcoin/dist/lib/types';
 import {
   BitcoinEsploraBaseProvider,
   BitcoinHDWalletProvider,
-} from "@chainify/bitcoin";
-import * as EsploraTypes from "@chainify/bitcoin/dist/lib/chain/esplora/types";
-import { UTXO } from "./";
-import { FileStorage } from "../storage";
-import { Transaction as EsploraTransaction } from "@chainify/bitcoin/dist/lib/chain/esplora/types";
-import { Address, Transaction } from "@chainify/types";
-import { BitcoinEsploraApiProvider } from "../bitcoin";
-import { BaseWallet } from "../wallets";
+} from '@chainify/bitcoin';
+import * as EsploraTypes from '@chainify/bitcoin/dist/lib/chain/esplora/types';
+import { UTXO } from './';
+import { FileStorage } from '../storage';
+import { Transaction as EsploraTransaction } from '@chainify/bitcoin/dist/lib/chain/esplora/types';
+import {
+  Address,
+  BigNumber,
+  ChainId,
+  Transaction,
+  TransactionRequest,
+} from '@chainify/types';
+import { BitcoinEsploraApiProvider } from '../bitcoin';
+import { BaseWallet } from '../wallets';
+import { AssetTypes } from '@liquality/cryptoassets';
 
 const store = new FileStorage();
 
+const btcAsset = {
+  name: 'Bitcoin',
+  code: 'BTC',
+  chain: ChainId.Bitcoin,
+  type: AssetTypes.native,
+  decimals: 8,
+};
+
 async function sleep(ms: number) {
-  new Promise((resolve) => setTimeout(resolve, ms));
+  new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export class BitcoinWallet implements BaseWallet {
@@ -28,19 +43,35 @@ export class BitcoinWallet implements BaseWallet {
   wallet: BitcoinHDWalletProvider;
   provider: BitcoinEsploraApiProvider;
   usedAddresses: Address[] = [];
-utxos: UTXO[] = [];
+  utxos: UTXO[] = [];
 
-getAddress(): Promise<Address> {
-    return this.wallet.getAddresses(0,1).then((addresses) => {
-            return new Promise((resolve) => {
-                    resolve(addresses[0]);
-            })
-    })
-}
-getAddresses(start: number, end: number): Promise<Address[]> {
+  getAddress(): Promise<Address> {
+    return this.wallet.getAddresses(0, 1).then(addresses => {
+      return new Promise(resolve => {
+        resolve(addresses[0]);
+      });
+    });
+  }
+  getAddresses(start: number, end: number): Promise<Address[]> {
     return this.wallet.getAddresses(start, end);
-}
-  
+  }
+
+  getBalance(): Promise<BigNumber> {
+    return new Promise(resolve => {
+      resolve(BigNumber(0));
+    });
+  }
+
+  sendTransaction(to: string, value: BigNumber): Promise<Transaction> {
+    const transaction: TransactionRequest = {
+      asset: btcAsset,
+      to: to,
+      value: value,
+      // data: need to be the raw transaction
+    };
+    return this.wallet.sendTransaction(transaction);
+  }
+
   async getUsedAddresses() {
     return await this.wallet.getUsedAddresses(1);
   }
@@ -48,7 +79,7 @@ getAddresses(start: number, end: number): Promise<Address[]> {
   //     return await this.wallet.getBalance(addresses)
   // }
   async getTransactionList(hashes: string[]) {
-    let transactions = Array();
+    let transactions = [];
     for (let i = 0; i < hashes.length; i++) {
       const result = await this.provider.getTransactionByHash(hashes[0]);
       transactions = transactions.concat(result);
@@ -70,21 +101,21 @@ getAddresses(start: number, end: number): Promise<Address[]> {
   }
 
   async _usedAddresses(): Promise<Address[]> {
-    if (store.exists("addresses.json")) {
+    if (store.exists('addresses.json')) {
       // console.log("addresses file exists")
-      this.usedAddresses = await store.asyncRead<Address[]>("addresses.json");
+      this.usedAddresses = await store.asyncRead<Address[]>('addresses.json');
     } else {
       // console.log("addresses file does not exist")
       this.usedAddresses = await this.getUsedAddresses();
-      store.asyncWrite<Address[]>("addresses.json", this.usedAddresses);
+      store.asyncWrite<Address[]>('addresses.json', this.usedAddresses);
     }
     return this.usedAddresses;
   }
 
   async _utxos(): Promise<UTXO[]> {
-    if (store.exists("utxos.json")) {
+    if (store.exists('utxos.json')) {
       // console.log("utxo file exists")
-      this.utxos = await store.asyncRead<UTXO[]>("utxos.json");
+      this.utxos = await store.asyncRead<UTXO[]>('utxos.json');
     } else {
       // console.log("utxo file does not exist")
       for (let i = 0; i < this.usedAddresses.length; i++) {
@@ -95,7 +126,7 @@ getAddresses(start: number, end: number): Promise<Address[]> {
         await sleep(5000);
       }
       // usedAddresses = await bitcoin.getUsedAddresses()
-      store.asyncWrite<UTXO[]>("utxos.json", this.utxos);
+      store.asyncWrite<UTXO[]>('utxos.json', this.utxos);
     }
 
     this.utxos.sort((a: UTXO, b: UTXO): number => {
@@ -116,8 +147,8 @@ getAddresses(start: number, end: number): Promise<Address[]> {
   }
 
   _forDisplay() {
-    let transactions: UTXO[] = this.utxos;
-    let transactionDisplay = [];
+    const transactions: UTXO[] = this.utxos;
+    const transactionDisplay = [];
     for (let i = 0; i < transactions.length; i++) {
       let date: null | Date = null;
       if (transactions[i].status.block_time !== undefined) {
@@ -141,14 +172,14 @@ getAddresses(start: number, end: number): Promise<Address[]> {
    * @returns Promise<UTXO[]>
    */
   async _rawTransactions(): Promise<UTXO[]> {
-    let rawTransactions = Array();
-    if (store.exists("transactions.json")) {
-      rawTransactions = await store.asyncRead<UTXO[]>("transactions.json");
+    let rawTransactions = [];
+    if (store.exists('transactions.json')) {
+      rawTransactions = await store.asyncRead<UTXO[]>('transactions.json');
     } else {
       rawTransactions = await this.getTransactionList(
-        this.utxos.map((t) => t.txid),
+        this.utxos.map(t => t.txid),
       );
-      store.asyncWrite<UTXO[]>("transactions.json", rawTransactions);
+      store.asyncWrite<UTXO[]>('transactions.json', rawTransactions);
     }
 
     return rawTransactions;
@@ -162,10 +193,10 @@ getAddresses(start: number, end: number): Promise<Address[]> {
       BlockstreamEsploraTestnet,
     );
 
-    let normalizedTransactions = Array();
-    if (store.exists("normalized-transactions.json")) {
+    let normalizedTransactions = [];
+    if (store.exists('normalized-transactions.json')) {
       normalizedTransactions = await store.asyncRead<Transaction[]>(
-        "normalized-transactions.json",
+        'normalized-transactions.json',
       );
     } else {
       for (let i = 0; i < this.utxos.length; i++) {
@@ -177,7 +208,7 @@ getAddresses(start: number, end: number): Promise<Address[]> {
         await sleep(5000);
       }
       store.asyncWrite<Transaction[]>(
-        "normalized-transactions.json",
+        'normalized-transactions.json',
         normalizedTransactions,
       );
     }
