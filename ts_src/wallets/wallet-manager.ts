@@ -1,10 +1,10 @@
-import { HDWallet } from ".";
+import { HDWallet } from '.';
 
 export class WalletManager {
   wallets: Array<HDWallet>;
 
   constructor() {
-    this.wallets = Array();
+    this.wallets = [];
   }
 
   createHDWallet(): HDWallet {

@@ -1,16 +1,14 @@
 import * as ecc from 'tiny-secp256k1';
 import * as bip39 from 'bip39';
 import BIP32Factory, { BIP32Interface } from 'bip32';
-import { BaseWallet } from '.';
+import { Client } from '@chainify/client';
 import {
   BitcoinEsploraApiProvider,
-  BitcoinNetworkProviders,
+  BitcoinHDWalletProvider,
   BitcoinNetworks,
-  BitcoinWallet,
-  EthereumWallet,
-  EvmChainProvider,
-  EvmNetworks,
-} from '../client';
+} from '@chainify/bitcoin';
+import { EvmProviderOptions, BtcProviderOptions } from '../assets/networks';
+import { EvmChainProvider, EvmWalletProvider } from '@chainify/evm';
 
 const bip32 = BIP32Factory(ecc);
 
@@ -45,45 +43,35 @@ export class HDWallet {
     return this.root.neutered().toBase58();
   }
 
-  createWallet(type: CoinTypes): BaseWallet {
-    const config = this.createConfig(type);
+  createWallet(type: CoinTypes): Client {
     if (type === CoinTypes.ethereum) {
-      const ethProvider = new EvmChainProvider(config.network);
-      return new EthereumWallet(config, ethProvider);
+      const ethClient = new Client();
+      ethClient.connect(
+        new EvmWalletProvider(
+          {
+            mnemonic: this.mnemonic,
+            derivationPath: "m/44'/60'/0'/0/0",
+          },
+          new EvmChainProvider(EvmProviderOptions.ganache),
+        ),
+      );
+      return ethClient;
     }
     // covers regtest as well
     if (type === CoinTypes.testnet) {
-      const provider = new BitcoinEsploraApiProvider(config.networkProvider);
+      const client = new Client();
+      client.connect(
+        new BitcoinHDWalletProvider(
+          {
+            mnemonic: this.mnemonic,
+            network: BitcoinNetworks.bitcoin_regtest,
+            baseDerivationPath: "m/84'/1'/0'",
+          },
+          new BitcoinEsploraApiProvider(BtcProviderOptions.regtestBatch),
+        ),
+      );
 
-      return new BitcoinWallet(config, provider);
-    }
-
-    throw new Error('Unsupported coin type');
-  }
-
-  createConfig(type: CoinTypes): any {
-    if (type === CoinTypes.ethereum) {
-      return {
-        mnemonic: this.mnemonic,
-        network: EvmNetworks.ganache,
-        derivationPath: "m/44'/60'/0'/0/0",
-      };
-    }
-    if (type === CoinTypes.testnet) {
-      return {
-        mnemonic: this.mnemonic,
-        network: BitcoinNetworks.bitcoin_testnet,
-        baseDerivationPath: "m/84'/1'/0'",
-        networkProvider: BitcoinNetworkProviders.blockstream_testnet,
-      };
-    }
-    if (type === CoinTypes.bitcoin) {
-      return {
-        mnemonic: this.mnemonic,
-        network: BitcoinNetworks.bitcoin,
-        baseDerivationPath: "m/84'/0'/0'",
-        networkProvider: BitcoinNetworkProviders.blockstream,
-      };
+      return client;
     }
 
     throw new Error('Unsupported coin type');

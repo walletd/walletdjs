@@ -9,6 +9,7 @@ export enum ChainId {
   Bitcoin = 'bitcoin',
   Ethereum = 'ethereum',
   Solana = 'solana',
+  BinanceSmartChain = 'binance',
 }
 
 export interface Asset {
