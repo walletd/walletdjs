@@ -22,6 +22,13 @@ export const EvmProviderOptions = {
     chainId: 56,
     rpcUrl: 'https://binance.llamarpc.com',
   },
+  polygonTestnet: {
+    name: 'polygonTestnet',
+    coinType: 'native',
+    isTestnet: true,
+    chainId: 80001,
+    rpcUrl: 'https://polygon-mumbai-bor-rpc.publicnode.com',
+  },
 };
 
 export const BtcProviderOptions = {

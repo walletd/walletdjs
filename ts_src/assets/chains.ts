@@ -68,6 +68,44 @@ const chains: { [key in ChainId]: Chain } = {
     isValidTransactionHash: (hash: string) => isValidSolanaTx(hash),
     formatTransactionHash: (hash: string) => hash,
   },
+  [ChainId.BinanceSmartChain]: {
+    name: 'Binance Smart Chain',
+    code: 'BNB',
+    nativeAsset: 'BNB',
+    fees: {
+      unit: 'gwei',
+    },
+    safeConfirmations: 3,
+    // ~4 blocks per minute * 30 minutes -> 120 blocks wait period
+    txFailureTimeout: 1800000, // in ms
+    evmCompatible: true,
+    hasTokens: true,
+    supportCustomFees: true,
+    isValidAddress: (hexAddress: string) => isValidAddress(with0x(hexAddress)),
+    formatAddress: (hexAddress: string) =>
+      toChecksumAddress(with0x(hexAddress)),
+    isValidTransactionHash: (hash: string) => isValidHexWith0xPrefix(hash),
+    formatTransactionHash: (hash: string) => toLowerCaseWithout0x(hash),
+  },
+  [ChainId.Polygon]: {
+    name: 'Polygon',
+    code: 'MATIC',
+    nativeAsset: 'MATIC',
+    fees: {
+      unit: 'gwei',
+    },
+    safeConfirmations: 3,
+    // ~4 blocks per minute * 30 minutes -> 120 blocks wait period
+    txFailureTimeout: 1800000, // in ms
+    evmCompatible: true,
+    hasTokens: true,
+    supportCustomFees: true,
+    isValidAddress: (hexAddress: string) => isValidAddress(with0x(hexAddress)),
+    formatAddress: (hexAddress: string) =>
+      toChecksumAddress(with0x(hexAddress)),
+    isValidTransactionHash: (hash: string) => isValidHexWith0xPrefix(hash),
+    formatTransactionHash: (hash: string) => toLowerCaseWithout0x(hash),
+  },
 };
 
 function isEthereumChain(chain: ChainId) {

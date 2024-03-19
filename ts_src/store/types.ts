@@ -1,9 +1,9 @@
 import { FeeDetails, NFTAsset, Nullable, Transaction } from '@chainify/types';
 import { ChainId } from '@liquality/cryptoassets';
-import { Step } from '@lifi/sdk';
+// import { Step } from '@lifi/sdk';
 // import { SwapProviderError } from '../swaps/types';
 import BN from 'bignumber.js';
-import { LiqualityErrorJSON } from '@liquality/error-parser';
+// import { LiqualityErrorJSON } from '@liquality/error-parser';
 import { ChainifyNetwork } from '../types';
 export type NetworkWalletIdMap<T> = Partial<
   Record<Network, Record<WalletId, T>>
@@ -205,7 +205,7 @@ export interface SwapHistoryItem extends BaseHistoryItem {
   toAmount: string;
   bridgeAsset?: Asset;
   path?: string[];
-  lifiRoute?: Step; // LiFi
+//   lifiRoute?: Step; // LiFi
   //   swapProviderError?: SwapProviderError;
 }
 
@@ -272,7 +272,7 @@ export interface RootState {
   whatsNewModalVersion: string;
   enabledChains: WalletIdNetworkMap<ChainId[]>;
 
-  errorLog: LiqualityErrorJSON[];
+//   errorLog: LiqualityErrorJSON[];
   customChainSeetings: NetworkWalletIdMap<Record<ChainId, ChainifyNetwork>>;
 }
 

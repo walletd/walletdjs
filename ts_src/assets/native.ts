@@ -33,6 +33,26 @@ const nativeAssets: AssetMap = {
     decimals: 9,
     sendGasLimit: sendGasLimits.SOL,
   },
+  BNB: {
+    name: 'Binance Coin',
+    chain: ChainId.BinanceSmartChain,
+    type: AssetTypes.native,
+    code: 'BNB',
+    coinGeckoId: 'binancecoin',
+    color: '#f3ba2f',
+    decimals: 18,
+    sendGasLimit: sendGasLimits.NATIVE_EVM,
+  },
+  MATIC: {
+    name: 'Polygon',
+    chain: ChainId.Polygon,
+    type: AssetTypes.native,
+    code: 'MATIC',
+    coinGeckoId: 'matic-network',
+    color: '#8247e5',
+    decimals: 18,
+    sendGasLimit: sendGasLimits.NATIVE_EVM,
+  },
 };
 
 const testnetNativeAssets = TESTNET_NATIVE.reduce(

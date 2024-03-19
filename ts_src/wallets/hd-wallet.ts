@@ -2,23 +2,17 @@ import * as ecc from 'tiny-secp256k1';
 import * as bip39 from 'bip39';
 import BIP32Factory, { BIP32Interface } from 'bip32';
 import { Client } from '@chainify/client';
+
 import {
-  BitcoinEsploraApiProvider,
-  BitcoinHDWalletProvider,
-  BitcoinNetworks,
-} from '@chainify/bitcoin';
-import { EvmProviderOptions, BtcProviderOptions } from '../assets/networks';
-import { EvmChainProvider, EvmWalletProvider } from '@chainify/evm';
+  createBtcClient,
+  createEvmClient,
+  createSolanaClient,
+} from './clients';
+import { AccountInfo, ClientSettings, Network } from '../store/types';
+import { getChain, ChainId } from '@liquality/cryptoassets';
+import { ChainifyNetwork } from '../types';
 
 const bip32 = BIP32Factory(ecc);
-
-export enum CoinTypes {
-  bitcoin = 0,
-  testnet = 1,
-  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
-  regtest = 1,
-  ethereum = 60,
-}
 
 export class HDWallet {
   mnemonic: string;
@@ -43,35 +37,22 @@ export class HDWallet {
     return this.root.neutered().toBase58();
   }
 
-  createWallet(type: CoinTypes): Client {
-    if (type === CoinTypes.ethereum) {
-      const ethClient = new Client();
-      ethClient.connect(
-        new EvmWalletProvider(
-          {
-            mnemonic: this.mnemonic,
-            derivationPath: "m/44'/60'/0'/0/0",
-          },
-          new EvmChainProvider(EvmProviderOptions.ganache),
-        ),
-      );
-      return ethClient;
+  createWallet(
+    chainId: ChainId,
+    accountInfo: AccountInfo,
+    clientSettings: ClientSettings<ChainifyNetwork>,
+  ): Client {
+    const chain = getChain(Network.Testnet, chainId);
+    if (chain.isEVM) {
+      return createEvmClient(chain, clientSettings, this.mnemonic, accountInfo);
     }
     // covers regtest as well
-    if (type === CoinTypes.testnet) {
-      const client = new Client();
-      client.connect(
-        new BitcoinHDWalletProvider(
-          {
-            mnemonic: this.mnemonic,
-            network: BitcoinNetworks.bitcoin_regtest,
-            baseDerivationPath: "m/84'/1'/0'",
-          },
-          new BitcoinEsploraApiProvider(BtcProviderOptions.regtestBatch),
-        ),
-      );
+    if (chainId === ChainId.Bitcoin) {
+      return createBtcClient(clientSettings, this.mnemonic, accountInfo);
+    }
 
-      return client;
+    if (chainId === ChainId.Solana) {
+      return createSolanaClient(clientSettings, this.mnemonic, accountInfo);
     }
 
     throw new Error('Unsupported coin type');

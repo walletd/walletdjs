@@ -1,4 +1,4 @@
-import { HDWallet, CoinTypes } from './hd-wallet';
+import { HDWallet } from './hd-wallet';
 import { WalletManager } from './wallet-manager';
 import { BigNumber } from 'bignumber.js';
-export { BigNumber, HDWallet, WalletManager, CoinTypes };
+export { BigNumber, HDWallet, WalletManager };

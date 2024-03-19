@@ -38,6 +38,7 @@
     "@chainify/bitcoin": "^2.3.0",
     "@chainify/client": "^2.2.1",
     "@chainify/evm": "^3.0.0",
+    "@chainify/solana": "^2.4.1",
     "@chainify/types": "^2.3.0",
     "@ethersproject/providers": "^5.7.2",
     "@liquality/cryptoassets": "^2.12.0",
