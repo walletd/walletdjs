@@ -2,7 +2,7 @@ import { currencyToUnit, unitToCurrency } from '../../assets';
 import { v4 as uuidv4 } from 'uuid';
 import { HDWallet } from '../index';
 import { ChainId, getChain } from '@liquality/cryptoassets';
-import { BitcoinNetworks } from '@chainify/bitcoin';
+import { BitcoinNetworks } from '../../bitcoin';
 import { Network } from '../../store/types';
 import { Asset } from '@chainify/types';
 import { IAsset } from '../../assets/interfaces/IAsset';
