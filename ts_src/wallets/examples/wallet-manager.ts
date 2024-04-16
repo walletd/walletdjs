@@ -4,7 +4,7 @@ import { HDWallet } from '../index';
 import { ChainId, getChain } from '@liquality/cryptoassets';
 import { BitcoinNetworks } from '../../bitcoin';
 import { Network } from '../../store/types';
-import { Asset } from '@chainify/types';
+import { Asset } from '../../types';
 import { IAsset } from '../../assets/interfaces/IAsset';
 import { createAccount } from '../utils';
 
