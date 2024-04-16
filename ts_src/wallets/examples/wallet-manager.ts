@@ -4,8 +4,6 @@ import { HDWallet } from '../index';
 import { ChainId, getChain } from '@liquality/cryptoassets';
 import { BitcoinNetworks } from '../../bitcoin';
 import { Network } from '../../store/types';
-import { Asset } from '../../types';
-import { IAsset } from '../../assets/interfaces/IAsset';
 import { createAccount } from '../utils';
 
 (async () => {
@@ -63,21 +61,14 @@ import { createAccount } from '../utils';
     console.log(account.asset.code + ' ' + 'Blocks ' + blockHeight);
     const addressNew = await client.wallet.getAddress();
 
-    const assetCode: Asset = account.asset as unknown as Asset;
-    const balance = await client.wallet.getBalance([assetCode]);
+    const balance = await client.wallet.getBalance([account.asset]);
     console.log(
       account.asset.code +
         ' ' +
-        unitToCurrency(
-          account.asset as unknown as IAsset,
-          balance[0],
-        ).toString(),
+        unitToCurrency(account.asset, balance[0]).toString(),
     );
     console.log(addressNew.toString());
-    const amountToSend = currencyToUnit(
-      account.asset as unknown as IAsset,
-      0.0001,
-    );
+    const amountToSend = currencyToUnit(account.asset, 0.0001);
     console.log(account.asset.code + ' ' + amountToSend);
     //   await client.wallet.sendTransaction({
     //     to: asset.asset.sendAddress,
