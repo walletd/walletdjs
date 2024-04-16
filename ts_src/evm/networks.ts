@@ -57,6 +57,14 @@ const goerli: Network = {
     isTestnet: true,
 };
 
+const sepolia: Network = {
+    name: 'sepolia',
+    coinType: '60',
+    networkId: 11155111,
+    chainId: 11155111,
+    isTestnet: true,
+};
+
 const rsk_mainnet: Network = {
     name: 'rsk_mainnet',
     coinType: '60',
@@ -193,6 +201,7 @@ const EvmNetworks = {
     rinkeby,
     kovan,
     goerli,
+    sepolia,
     rsk_mainnet,
     rsk_testnet,
     rsk_regtest,
