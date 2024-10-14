@@ -1,5 +1,5 @@
 import { ChainId, getChain } from '@liquality/cryptoassets';
-import { Network } from '../../store/types';
+import { AccountDefinition, Network } from '../../store/types';
 
 export const getDerivationPath = (
   chainId: ChainId,
@@ -26,7 +26,7 @@ export const createAccount = (
   network: Network,
   chainId: ChainId,
   index: number,
-) => {
+): AccountDefinition => {
   const chainDetails = getChain(network, chainId);
   const derivationPath = getDerivationPath(
     chainId,

@@ -4,7 +4,7 @@ import { HDWallet } from '../index';
 import { ChainId, getChain } from '@liquality/cryptoassets';
 import { BitcoinNetworks } from '../../bitcoin';
 import { Network } from '../../store/types';
-import { createAccount } from '../utils';
+
 
 (async () => {
   const networks = [Network.Testnet];
@@ -24,13 +24,8 @@ import { createAccount } from '../utils';
     imported: true,
   };
 
-  const hdWallet = new HDWallet(wallet.mnemonic);
-  const accounts = [];
-  for (const network of networks) {
-    for (const chainId of chainIds) {
-      accounts.push(createAccount(network, chainId, 0));
-    }
-  }
+  const hdWallet = new HDWallet(wallet.mnemonic, { networks, chainIds });
+  const accounts = hdWallet.accounts;
   // fetch chain settings by chain id
 
   for (const account of accounts) {

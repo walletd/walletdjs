@@ -2,6 +2,7 @@ import * as ecc from 'tiny-secp256k1';
 import * as bip39 from 'bip39';
 import BIP32Factory, { BIP32Interface } from 'bip32';
 import { Client } from '@chainify/client';
+import { createAccount } from './utils';
 
 import {
   createBtcClient,
@@ -13,16 +14,30 @@ import { getChain, ChainId } from '@liquality/cryptoassets';
 import { ChainifyNetwork } from '../types';
 
 const bip32 = BIP32Factory(ecc);
+export interface WalletOptions {
+  networks: Network[];
+  chainIds: ChainId[];
+}
 
 export class HDWallet {
   mnemonic: string;
   seed: Buffer;
   root: BIP32Interface;
+  networks: Network[];
+  chainIds: ChainId[];
+  accounts: AccountInfo[] = [];
 
-  constructor(mnemonic: string) {
+  constructor(mnemonic: string, options?: WalletOptions) {
     this.mnemonic = mnemonic;
     this.seed = bip39.mnemonicToSeedSync(mnemonic);
     this.root = bip32.fromSeed(this.seed);
+    this.networks = options?.networks || [Network.Mainnet, Network.Testnet];
+    this.chainIds = options?.chainIds || [];
+    for (const network of this.networks) {
+      for (const chainId of this.chainIds) {
+        this.accounts.push(createAccount(network, chainId, 0));
+      }
+    }
   }
 
   static generate(): HDWallet {

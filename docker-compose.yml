@@ -1,0 +1,20 @@
+version: "3.7"
+
+services:
+  esplora:
+    image: devinsa/esplora:latest
+    entrypoint: [ "bash", "-c", "/srv/explorer/run.sh bitcoin-regtest explorer"] 
+    volumes:
+      - ${PWD}/data/bitcoin:/data
+    restart: always
+    ports:
+      - "50001:50001"
+      - "8094:80"
+  bitcoind:
+    image: lncm/bitcoind:v25.0
+    command: -regtest -rpcbind=0.0.0.0 -rpcallowip=0.0.0.0/0 -rpcuser=satoshi -rpcpassword:bitcoin
+    volumes:
+      - ${PWD}/data/bitcoin:/data/.bitcoin
+    restart: on-failure
+    ports:
+      - "18443:18443"
