@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { HDWallet } from '../index';
 import { ChainId, getChain } from '@liquality/cryptoassets';
 import { BitcoinNetworks } from '../../bitcoin';
+import { EvmNetworks } from '../../evm';
 import { Network } from '../../store/types';
 import { createAccount } from '../utils';
 
@@ -12,7 +13,7 @@ import { createAccount } from '../utils';
     ChainId.Bitcoin,
     ChainId.Ethereum,
     ChainId.BinanceSmartChain,
-    ChainId.Polygon,
+    // ChainId.Polygon,
     ChainId.Solana,
   ];
   const wallet = {
@@ -42,6 +43,14 @@ import { createAccount } from '../utils';
           ...BitcoinNetworks.bitcoin_testnet,
           scraperUrl: 'https://esplora.tekkzbadger.com/testnet/api/',
           batchScraperUrl: 'https://esplora-batch.tekkzbadger.com',
+        },
+      };
+    } else if (account.chain === ChainId.Ethereum) {
+      chainSettings = {
+        chainifyNetwork: {
+          ...EvmNetworks.sepolia,
+          rpcUrls: ['https://ethereum-sepolia-rpc.publicnode.com'],
+          rpcUrl: 'https://ethereum-sepolia-rpc.publicnode.com',
         },
       };
     } else {

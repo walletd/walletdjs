@@ -205,7 +205,7 @@ export interface SwapHistoryItem extends BaseHistoryItem {
   toAmount: string;
   bridgeAsset?: Asset;
   path?: string[];
-//   lifiRoute?: Step; // LiFi
+  //   lifiRoute?: Step; // LiFi
   //   swapProviderError?: SwapProviderError;
 }
 
@@ -272,7 +272,7 @@ export interface RootState {
   whatsNewModalVersion: string;
   enabledChains: WalletIdNetworkMap<ChainId[]>;
 
-//   errorLog: LiqualityErrorJSON[];
+  //   errorLog: LiqualityErrorJSON[];
   customChainSeetings: NetworkWalletIdMap<Record<ChainId, ChainifyNetwork>>;
 }
 

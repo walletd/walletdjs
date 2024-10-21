@@ -2,11 +2,11 @@ import { BitcoinNetworks } from '@chainify/bitcoin';
 
 export const EvmProviderOptions = {
   ganache: {
-    name: 'ganache',
+    name: 'sepolia',
     coinType: 'native',
     isTestnet: true,
-    chainId: 1337,
-    rpcUrl: 'HTTP://127.0.0.1:8545',
+    chainId: 11155111,
+    rpcUrl: 'https://1rpc.io/sepolia',
   },
   bnbTestnet: {
     name: 'bnbTestnet',
