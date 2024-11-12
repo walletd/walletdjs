@@ -133,7 +133,7 @@ export function parseBlockResponse(
     parentHash: block.parentHash,
     difficulty: block.difficulty,
     nonce: Number(block.nonce),
-    transactions: transactions?.map(t => parseTxResponse(t)),
+    transactions: transactions?.map((t) => parseTxResponse(t)),
     _raw: block,
   };
 }
