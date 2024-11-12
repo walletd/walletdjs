@@ -8,8 +8,7 @@
     "node": ">=8.0.0"
   },
   "scripts": {
-    "build": "npm run clean && tsc -p ./tsconfig.json && npm run formatjs",
-    "clean": "rimraf src",
+    "build": "tsc",
     "format": "npm run prettier -- --write",
     "formatjs": "npm run prettierjs -- --write",
     "lint": "eslint ts_src/** src/**/*.js",
@@ -17,13 +16,16 @@
     "prettierjs": "prettier \"src/**/*.js\" --ignore-path ./.prettierignore"
   },
   "files": [
-    "src"
+    "dist"
   ],
+  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/crypto-js": "^4.2.2",
     "@types/node": "^20.10.7",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^6.18.1",
     "@typescript-eslint/parser": "^6.18.1",
     "eslint": "^8.56.0",
