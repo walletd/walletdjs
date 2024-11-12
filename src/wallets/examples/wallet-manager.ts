@@ -119,7 +119,6 @@ import { ChainId as ChainifyChainId, type Asset } from '@chainify/types';
             feeAsset: account.asset?.feeAsset,
      }
     
-
       const balance = await client.wallet.getBalance([asset2]);
       if (balance[0] !== undefined) {
         console.log(
