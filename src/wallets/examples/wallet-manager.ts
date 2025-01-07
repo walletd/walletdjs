@@ -2,13 +2,10 @@ import { currencyToUnit, unitToCurrency } from '../../assets/index.js';
 import { v4 as uuidv4 } from 'uuid';
 import { HDWallet } from '../index.js';
 import { ChainId, getChain } from '@liquality/cryptoassets';
-import type { IAsset } from '../../assets/interfaces/IAsset.js';
-import { ChainId as LocalChainId } from '../../assets/types.js';
 import { BitcoinNetworks } from '../../bitcoin/index.js';
 import { EvmNetworks } from '../../evm/index.js';
 import { Network } from '../../store/types.js';
 import { createAccount } from '../utils/index.js';
-import { ChainId as ChainifyChainId, type Asset } from '@chainify/types';
 
 (async () => {
   const networks = [Network.Testnet];
@@ -39,7 +36,7 @@ import { ChainId as ChainifyChainId, type Asset } from '@chainify/types';
 
   for (const account of accounts) {
     let chainSettings;
-    if (account.chain === ChainId.Bitcoin) {
+    if (account.account.chain === ChainId.Bitcoin) {
       chainSettings = {
         network: Network.Testnet,
         chainifyNetwork: {
@@ -48,7 +45,7 @@ import { ChainId as ChainifyChainId, type Asset } from '@chainify/types';
           batchScraperUrl: 'https://esplora-batch.tekkzbadger.com',
         },
       };
-    } else if (account.chain === ChainId.Ethereum) {
+    } else if (account.account.chain === ChainId.Ethereum) {
       chainSettings = {
         network: Network.Testnet,
         chainifyNetwork: {
@@ -58,7 +55,7 @@ import { ChainId as ChainifyChainId, type Asset } from '@chainify/types';
         },
       };
     } else {
-      const chainDetails = getChain(Network.Testnet, account.chain);
+      const chainDetails = getChain(Network.Testnet, account.account.chain);
       chainSettings = {
         network: Network.Testnet,
         chainifyNetwork: {
@@ -68,70 +65,29 @@ import { ChainId as ChainifyChainId, type Asset } from '@chainify/types';
       };
     }
 
-    console.log(account.name);
-    const client = hdWallet.createWallet(account.chain, account, chainSettings);
+    console.log(account.account.name);
+    const client = hdWallet.createWallet(
+      account.account.chain,
+      account.account,
+      chainSettings,
+    );
     const blockHeight = await client.chain.getBlockHeight();
-    console.log(account.asset?.code + ' ' + 'Blocks ' + blockHeight);
+    console.log(account.account.asset?.code + ' ' + 'Blocks ' + blockHeight);
     const addressNew = await client.wallet.getAddress();
-    if (account.asset !== undefined) {
-    const asset2: Asset = {
-      ...account.asset,
-      chain: (() => {
-        switch (account.asset.chain) {
-        case ChainId.Bitcoin:
-          return ChainifyChainId.Bitcoin;
-        case ChainId.Ethereum:
-          return ChainifyChainId.Ethereum;
-        case ChainId.BinanceSmartChain:
-          return ChainifyChainId.BinanceSmartChain;
-        case ChainId.Solana:
-          return ChainifyChainId.Solana;
-        // Add other cases as needed
-        default:
-          throw new Error(`Unsupported chain: ${account.asset.chain}`);
-        }
-      })()
-    }
-
-    const iAsset: IAsset = {
-        name: account.asset.name,
-        chain: (() => {
-            switch (account.asset?.chain) {
-            case ChainId.Bitcoin:
-              return LocalChainId.Bitcoin;
-            case ChainId.Ethereum:
-              return LocalChainId.Ethereum;
-            case ChainId.BinanceSmartChain:
-              return LocalChainId.BinanceSmartChain;
-            case ChainId.Solana:
-              return LocalChainId.Solana;
-            // Add other cases as needed
-            default:
-              throw new Error(`Unsupported chain: ${account.asset?.chain}`);
-            }})(),
-            type: account.asset?.type,
-            code: account.asset?.code,
-            decimals: account.asset?.decimals,
-            contractAddress: account.asset?.contractAddress,
-            color: account.asset?.color,
-            priceSource: account.asset?.priceSource,
-            matchingAsset: account.asset?.matchingAsset,
-            feeAsset: account.asset?.feeAsset,
-     }
-    
-      const balance = await client.wallet.getBalance([asset2]);
+    if (account.account.asset !== undefined) {
+      const balance = await client.wallet.getBalance([account.asset2]);
       if (balance[0] !== undefined) {
         console.log(
-          account.asset?.code +
+          account.account.asset?.code +
             ' ' +
-            unitToCurrency(iAsset, balance[0]).toString(),
+            unitToCurrency(account.iAsset, balance[0]).toString(),
         );
       } else {
-        console.log(`${account.asset?.code} balance is undefined`);
+        console.log(`${account.account.asset?.code} balance is undefined`);
       }
       console.log(addressNew.toString());
-      const amountToSend = currencyToUnit(iAsset, 0.0001);
-      console.log(account.asset?.code + ' ' + amountToSend);
+      const amountToSend = currencyToUnit(account.iAsset, 0.0001);
+      console.log(account.account.asset?.code + ' ' + amountToSend);
       //   await client.wallet.sendTransaction({
       //     to: asset.asset.sendAddress,
       //     value: amountToSend,
